@@ -190,6 +190,24 @@ table.data-table tr:hover td { background: #f8fafd; }
 /* Settings */
 .settings-section { background:#fff; border-radius:8px; border:1px solid var(--border); padding:20px; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
 .settings-section h3 { font-size:14px; font-weight:bold; color:var(--bhdc-blue); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+/* PIN Modal */
+.pin-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; }
+.pin-overlay.visible { display:flex; }
+.pin-modal { background:#fff; border-radius:12px; padding:32px 28px 24px; width:300px; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.25); }
+.pin-modal h3 { font-size:16px; font-weight:bold; color:var(--bhdc-blue); margin:0 0 6px; }
+.pin-modal p { font-size:12px; color:#666; margin:0 0 18px; }
+.pin-dots { display:flex; justify-content:center; gap:12px; margin-bottom:18px; }
+.pin-dot { width:14px; height:14px; border-radius:50%; border:2px solid #bbb; background:#fff; transition:all 0.15s; }
+.pin-dot.filled { background:var(--bhdc-blue); border-color:var(--bhdc-blue); }
+.pin-dot.error { background:#e53935; border-color:#e53935; }
+.pin-keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+.pin-key { background:#f4f6fa; border:1px solid #dde1e9; border-radius:8px; padding:13px; font-size:18px; font-weight:bold; color:#1a2a4a; cursor:pointer; transition:all 0.1s; user-select:none; }
+.pin-key:hover { background:#e3e8f5; border-color:#7b9fd4; }
+.pin-key:active { background:#c8d5ee; transform:scale(0.95); }
+.pin-key.wide { grid-column:span 2; }
+.pin-error-msg { font-size:12px; color:#e53935; min-height:16px; margin-bottom:4px; }
+.pin-cancel { background:none; border:none; color:#888; font-size:12px; cursor:pointer; padding:4px 8px; }
+.pin-cancel:hover { color:#333; }
 
 </style>
 </head>
@@ -819,7 +837,10 @@ function showPage(name) {
   if (renderers[name]) renderers[name]();
 }
 document.querySelectorAll('.nav-btn').forEach(b => {
-  b.addEventListener('click', () => showPage(b.dataset.page));
+  b.addEventListener('click', () => {
+    if (b.dataset.page === 'settings') { showPinModal(); }
+    else { showPage(b.dataset.page); }
+  });
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1771,6 +1792,83 @@ function syncToGoogleSheets(assessment) {
 function downloadAppScript() {
   const code = `// VOCGuard Google Apps Script Backend v2
 // Deploy as Web App: Execute as Me, Access: Anyone
+// ════════════════════════════════════════════════════════════════════════════
+// PIN LOCK
+// ════════════════════════════════════════════════════════════════════════════
+const PIN_HASH = '18cb37e2865113e634048f340e90e5e54070036f3085b4c66eba9200d49ff8a8'; // SHA-256 of PIN
+let pinBuffer = '';
+
+function showPinModal() {
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-overlay').classList.add('visible');
+}
+
+function closePinModal() {
+  document.getElementById('pin-overlay').classList.remove('visible');
+  pinBuffer = '';
+  updatePinDots();
+}
+
+function pinCancel() { closePinModal(); }
+
+function pinKey(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(verifyPin, 120); // brief pause so last dot fills visually
+  }
+}
+
+function pinClear() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.classList.toggle('filled', i < pinBuffer.length);
+    dot.classList.remove('error');
+  }
+}
+
+async function verifyPin() {
+  const msgBuffer = new TextEncoder().encode(pinBuffer);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  if (hashHex === PIN_HASH) {
+    closePinModal();
+    showPage('settings');
+  } else {
+    // Flash error
+    for (let i = 0; i < 4; i++) document.getElementById('pd' + i).classList.add('error');
+    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
+    setTimeout(() => {
+      pinBuffer = '';
+      updatePinDots();
+      document.getElementById('pin-error').textContent = '';
+    }, 1200);
+  }
+}
+
+// Close modal on overlay background click
+document.getElementById('pin-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closePinModal();
+});
+
+// Keyboard support
+document.addEventListener('keydown', function(e) {
+  if (!document.getElementById('pin-overlay').classList.contains('visible')) return;
+  if (e.key >= '0' && e.key <= '9') pinKey(e.key);
+  else if (e.key === 'Backspace') pinClear();
+  else if (e.key === 'Escape') pinCancel();
+});
+
 // Paste the Web App URL into VOCGuard Settings
 
 const SHEET_ASSESSMENTS = 'VOC Submissions';
@@ -2074,5 +2172,34 @@ initAssessSetup();
 populateRegisterFilters();
 renderDashboard();
 </script>
+<!-- PIN Modal -->
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-modal">
+    <h3>🔒 Settings</h3>
+    <p>Enter your PIN to access settings</p>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinClear()">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinCancel()">✕</button>
+    </div>
+    <div class="pin-error-msg" id="pin-error"></div>
+  </div>
+</div>
+
 </body>
 </html>
