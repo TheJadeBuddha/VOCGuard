@@ -207,7 +207,7 @@ table.data-table tr:hover td { background: #f8fafd; }
   </div>
   <div id="header-right">
     <div id="hdr-date"></div>
-    <div>v2.0 | 11 Activities | 4 Rigs</div>
+    <div>v2.0 | 11 Activities | 4 Rigs | <span style="opacity:0.6;font-size:10px">https://thejadebuddha.github.io/VOCGuard/</span></div>
   </div>
 </div>
 
@@ -509,6 +509,7 @@ table.data-table tr:hover td { background: #f8fafd; }
       <tr><td style="font-weight:600;padding:6px 12px">VOC Activities</td><td style="padding:6px 12px">11 (CHK-001 to CHK-011)</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">Assessors</td><td style="padding:6px 12px">9 (4 × Rig 117, 4 × Rig 118, HSE Mgr)</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">New in v2</td><td style="padding:6px 12px">Google Sheets sync, trend charts, print forms, coaching log</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">Live URL</td><td style="padding:6px 12px"><a href="https://thejadebuddha.github.io/VOCGuard/" target="_blank" style="color:#2E6DA4">https://thejadebuddha.github.io/VOCGuard/</a></td></tr>
     </table>
   </div>
 </div>
@@ -1716,7 +1717,7 @@ function destroyChart(id) {
 // ════════════════════════════════════════════════════════════════════════════
 // SETTINGS & GOOGLE SHEETS
 // ════════════════════════════════════════════════════════════════════════════
-const SETTINGS = { gsUrl: '', demoMode: true };
+const SETTINGS = { gsUrl: 'https://script.google.com/macros/s/AKfycbzucMOE2Rd_Ds58j_klDGJI-5gS68YtzHcn87rxkZlLmrINZ_pHLamYc0G1dhd48nHIgQ/exec', demoMode: true };
 
 function renderSettings() {
   const urlEl = document.getElementById('gs-url');
@@ -1949,7 +1950,7 @@ ${itemsHTML}
     <div style="font-size:8.5px;color:#999;margin-top:3px">${name||'_______________'}</div>
   </div>
 </div>
-<div style="text-align:center;margin-top:8px;font-size:8px;color:#bbb">VOCGuard v2.0 | BHDC-HSE-TRN-PRO-001 Rev 03 | Generated: ${new Date().toLocaleDateString('en-GB')}</div>
+<div style="text-align:center;margin-top:8px;font-size:8px;color:#bbb">VOCGuard v2.0 | https://thejadebuddha.github.io/VOCGuard/ | BHDC-HSE-TRN-PRO-001 Rev 03 | Generated: ${new Date().toLocaleDateString('en-GB')}</div>
 <button class="no-print" onclick="window.print()" style="margin-top:8px;padding:5px 14px;background:#1B3A5C;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px">🖨️ Print</button>
 <script>
   window.onload = function() {
