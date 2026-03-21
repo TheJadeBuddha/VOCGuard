@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VOCGuard v2 — BHDC Verification of Competency</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+<style>
+:root {
+  --bhdc-blue: #1B3A5C;
+  --bhdc-mid: #2E6DA4;
+  --bhdc-light: #D6E4F0;
+  --vc: #27ae60;
+  --cwc: #e67e22;
+  --dr: #c0392b;
+  --no-assess: #95a5a6;
+  --vc-light: #d5f5e3;
+  --cwc-light: #fdebd0;
+  --dr-light: #fadbd8;
+  --border: #dde3ea;
+  --text: #2c3e50;
+  --bg: #f4f6f9;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; font-size: 14px; color: var(--text); background: var(--bg); }
+/* ── Header ── */
+#header { background: var(--bhdc-blue); color: #fff; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+#header h1 { font-size: 18px; letter-spacing: 0.5px; }
+#header .subtitle { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+#header-right { font-size: 12px; opacity: 0.8; text-align: right; }
+/* ── Nav ── */
+#nav { background: var(--bhdc-mid); display: flex; gap: 0; overflow-x: auto; }
+.nav-btn { background: none; border: none; color: rgba(255,255,255,0.75); padding: 0 18px; height: 42px; cursor: pointer; font-size: 13px; white-space: nowrap; transition: all 0.15s; border-bottom: 3px solid transparent; }
+.nav-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+.nav-btn.active { color: #fff; border-bottom-color: #fff; background: rgba(255,255,255,0.12); font-weight: bold; }
+/* ── Layout ── */
+#main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+.page { display: none; }
+.page.active { display: block; }
+/* ── Cards & KPIs ── */
+.kpi-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.kpi-card { background: #fff; border-radius: 8px; padding: 18px 20px; flex: 1; min-width: 160px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.kpi-card .kpi-val { font-size: 32px; font-weight: bold; line-height: 1; }
+.kpi-card .kpi-label { font-size: 12px; color: #666; margin-top: 4px; }
+.kpi-card .kpi-sub { font-size: 11px; color: #888; margin-top: 3px; }
+.kpi-vc .kpi-val { color: var(--vc); }
+.kpi-cwc .kpi-val { color: var(--cwc); }
+.kpi-dr .kpi-val { color: var(--dr); }
+.kpi-total .kpi-val { color: var(--bhdc-blue); }
+/* ── Grid ── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media(max-width:900px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+.card { background: #fff; border-radius: 8px; border: 1px solid var(--border); padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+.card h3 { font-size: 14px; font-weight: bold; color: var(--bhdc-blue); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+/* ── Tables ── */
+.tbl-wrap { overflow-x: auto; }
+table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.data-table th { background: var(--bhdc-blue); color: #fff; padding: 8px 12px; text-align: left; font-weight: 600; white-space: nowrap; }
+table.data-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #f8fafd; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.badge-vc { background: var(--vc-light); color: var(--vc); }
+.badge-cwc { background: var(--cwc-light); color: var(--cwc); }
+.badge-dr { background: var(--dr-light); color: var(--dr); }
+.badge-na { background: #ecf0f1; color: #666; }
+/* ── Filters ── */
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+.filter-bar select, .filter-bar input { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: #fff; }
+.filter-bar label { font-size: 12px; color: #666; }
+.btn { padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+.btn-primary { background: var(--bhdc-blue); color: #fff; }
+.btn-primary:hover { background: #0f2540; }
+.btn-success { background: var(--vc); color: #fff; }
+.btn-success:hover { background: #219a52; }
+.btn-outline { background: #fff; color: var(--bhdc-blue); border: 1.5px solid var(--bhdc-blue); }
+.btn-outline:hover { background: var(--bhdc-light); }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+/* ── Assessment form ── */
+.assessment-step { display: none; }
+.assessment-step.active { display: block; }
+.section-header { background: var(--bhdc-blue); color: #fff; padding: 10px 16px; border-radius: 6px 6px 0 0; font-weight: bold; font-size: 13px; margin-top: 16px; }
+.section-body { background: #fff; border: 1px solid var(--border); border-top: none; border-radius: 0 0 6px 6px; }
+.item-row { display: flex; align-items: flex-start; padding: 14px 16px; border-bottom: 1px solid var(--border); gap: 12px; }
+.item-row:last-child { border-bottom: none; }
+.item-row.critical-row { background: #fff8f8; }
+.item-row.verbal-row { background: #f8fcff; }
+.item-row.scenario-row { background: #fffbf0; }
+.item-content { flex: 1; }
+.item-type-badge { font-size: 10px; font-weight: bold; padding: 1px 7px; border-radius: 10px; margin-bottom: 5px; display: inline-block; }
+.badge-critical { background: #f8d7da; color: #c0392b; }
+.badge-verbal { background: var(--bhdc-light); color: var(--bhdc-blue); }
+.badge-supporting { background: #e8f5e9; color: #27ae60; }
+.badge-scenario { background: #fff3cd; color: #856404; }
+.item-text { font-size: 13px; margin-bottom: 4px; line-height: 1.5; }
+.item-notes { font-size: 11px; color: #777; font-style: italic; line-height: 1.4; }
+.score-btns { display: flex; gap: 6px; margin-top: 8px; }
+.score-btn { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #ccc; background: #fff; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.15s; color: #555; }
+.score-btn:hover { border-color: var(--bhdc-mid); }
+.score-btn.selected-0 { background: var(--dr); border-color: var(--dr); color: #fff; }
+.score-btn.selected-1 { background: var(--cwc); border-color: var(--cwc); color: #fff; }
+.score-btn.selected-2 { background: var(--vc); border-color: var(--vc); color: #fff; }
+/* ── Outcome Banner ── */
+.outcome-banner { padding: 20px 24px; border-radius: 8px; text-align: center; margin: 20px 0; }
+.outcome-banner h2 { font-size: 24px; margin-bottom: 8px; }
+.outcome-banner.vc { background: var(--vc-light); color: var(--vc); border: 2px solid var(--vc); }
+.outcome-banner.cwc { background: var(--cwc-light); color: var(--cwc); border: 2px solid var(--cwc); }
+.outcome-banner.dr { background: var(--dr-light); color: var(--dr); border: 2px solid var(--dr); }
+/* ── Heat Map ── */
+.heat-cell { padding: 8px 4px; border-radius: 4px; text-align: center; font-size: 11px; font-weight: bold; transition: all 0.2s; cursor: default; }
+.heat-table { width: 100%; border-collapse: separate; border-spacing: 3px; }
+.heat-table th { font-size: 11px; padding: 4px 6px; color: var(--bhdc-blue); text-align: center; }
+.heat-table td { padding: 2px; }
+/* ── Assessor cards ── */
+.assessor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.assessor-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.assessor-card h4 { font-size: 13px; color: var(--bhdc-blue); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.assessor-stat { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px dotted #eee; }
+.assessor-stat:last-child { border-bottom: none; }
+.flag-warn { color: var(--cwc); font-weight: bold; }
+.flag-bad { color: var(--dr); font-weight: bold; }
+.flag-good { color: var(--vc); font-weight: bold; }
+/* ── Progress bar ── */
+.progress-bar-wrap { background: #eee; border-radius: 10px; height: 10px; overflow: hidden; margin: 4px 0; }
+.progress-bar-fill { height: 100%; border-radius: 10px; transition: width 0.3s; }
+/* ── Gaps ── */
+.gap-row { display: flex; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); gap: 12px; }
+.gap-row:last-child { border-bottom: none; }
+.gap-severity { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+/* ── Modal ── */
+#modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
+#modal-overlay.open { display: flex; justify-content: center; align-items: flex-start; padding-top: 40px; }
+#modal-box { background: #fff; border-radius: 10px; width: 100%; max-width: 820px; max-height: 90vh; overflow-y: auto; }
+#modal-header { background: var(--bhdc-blue); color: #fff; padding: 16px 20px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+#modal-header h2 { font-size: 16px; }
+#modal-close { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; line-height: 1; }
+#modal-body { padding: 20px; }
+#modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: 0; background: #fff; border-radius: 0 0 10px 10px; }
+/* ── Outcome preview bar ── */
+#outcome-preview { position: sticky; top: 56px; z-index: 9; background: var(--bhdc-blue); color: #fff; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+/* ── Print ── */
+@media print {
+  #header, #nav, #modal-overlay, .filter-bar .btn, .no-print { display: none !important; }
+  .page { display: block !important; }
+  .card, .kpi-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+  body { background: #fff; }
+}
+/* ── Misc ── */
+.section-title { font-size: 16px; font-weight: bold; color: var(--bhdc-blue); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.tag { background: var(--bhdc-light); color: var(--bhdc-blue); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+.mb16 { margin-bottom: 16px; }
+.mt16 { margin-top: 16px; }
+.text-center { text-align: center; }
+.small { font-size: 11px; color: #888; }
+.rig-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+.rig-67 { background: #d5e8d4; color: #2d7643; }
+.rig-68 { background: #dae8fc; color: #2354ab; }
+.rig-117 { background: #ffe6cc; color: #8a4a00; }
+.rig-118 { background: #e1d5e7; color: #5e3a7a; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--bhdc-blue); margin-bottom: 5px; }
+.form-group select, .form-group input, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+.form-group textarea { min-height: 60px; resize: vertical; }
+.step-indicator { display: flex; gap: 0; margin-bottom: 20px; }
+.step-dot { flex: 1; height: 4px; background: #ddd; }
+.step-dot.done { background: var(--vc); }
+.step-dot.active { background: var(--bhdc-mid); }
+
+/* ── VOCGuard v2 additions ── */
+/* Coaching Panel */
+.coaching-panel { display:none; background:#fffbf0; border:1px solid #f0d070; border-radius:6px; padding:12px 14px; margin-top:10px; }
+.coaching-panel.active { display:block; }
+.coaching-panel h5 { font-size:11px; font-weight:bold; color:#856404; margin-bottom:10px; }
+.coaching-field { margin-bottom:8px; }
+.coaching-field label { display:block; font-size:10px; font-weight:600; color:#555; margin-bottom:3px; }
+.coaching-field textarea { width:100%; padding:5px 8px; border:1px solid #ddd; border-radius:4px; font-size:12px; min-height:44px; resize:vertical; }
+.coaching-field input[type=text] { width:100%; padding:5px 8px; border:1px solid #ddd; border-radius:4px; font-size:12px; }
+/* Trend arrows */
+.trend-up { color:#27ae60; font-weight:bold; }
+.trend-down { color:#c0392b; font-weight:bold; }
+.trend-flat { color:#888; }
+/* Sync badge */
+.sync-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+.sync-ok { background:#d5f5e3; color:#27ae60; }
+.sync-fail { background:#fadbd8; color:#c0392b; }
+.sync-pending { background:#fef9e7; color:#856404; }
+/* Settings */
+.settings-section { background:#fff; border-radius:8px; border:1px solid var(--border); padding:20px; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+.settings-section h3 { font-size:14px; font-weight:bold; color:var(--bhdc-blue); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <div id="header-left-top" style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:22px;font-weight:bold;letter-spacing:1px">VOC<span style="color:#7ec8f0">Guard</span></span>
+      <div>
+        <div style="font-size:13px;font-weight:bold">BHDC Verification of Competency</div>
+        <div class="subtitle">Dukhan Field — QatarEnergy Operations</div>
+      </div>
+    </div>
+  </div>
+  <div id="header-right">
+    <div id="hdr-date"></div>
+    <div>v2.0 | 11 Activities | 4 Rigs | <span style="opacity:0.6;font-size:10px">https://thejadebuddha.github.io/VOCGuard/</span></div>
+  </div>
+</div>
+
+<div id="nav">
+  <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
+  <button class="nav-btn" data-page="assess">✅ New Assessment</button>
+  <button class="nav-btn" data-page="register">📋 Register</button>
+  <button class="nav-btn" data-page="heatmap">🗺️ Fleet Heat Map</button>
+  <button class="nav-btn" data-page="individual">👤 Individual</button>
+  <button class="nav-btn" data-page="gaps">⚠️ Gap Analysis</button>
+  <button class="nav-btn" data-page="assessors">🔍 Assessor Report</button>
+  <button class="nav-btn" data-page="settings">⚙️ Settings</button>
+</div>
+
+<div id="main">
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="page-dashboard" class="page active">
+  <div class="section-title">📊 VOC Performance Dashboard</div>
+  <div class="kpi-row" id="kpi-row"></div>
+  <div class="grid2 mb16">
+    <div class="card"><h3>Outcomes by Activity</h3><div style="position:relative;height:240px;overflow:hidden"><canvas id="chart-by-activity"></canvas></div></div>
+    <div class="card"><h3>Fleet Overview by Rig</h3><div style="position:relative;height:240px;overflow:hidden"><canvas id="chart-by-rig"></canvas></div></div>
+  </div>
+  <div class="grid2 mb16">
+    <div class="card"><h3>Monthly Trend — Pass Rate (6 months)</h3><div style="position:relative;height:200px;overflow:hidden"><canvas id="chart-trend-monthly"></canvas></div></div>
+    <div class="card"><h3>Activity Trend (last 30 days vs prior 30 days)</h3><div id="activity-trends-table"><p class="small" style="padding:8px">Loading…</p></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Recent Assessments</h3><div class="tbl-wrap"><table class="data-table" id="recent-table"><thead><tr><th>Date</th><th>Assessee</th><th>Activity</th><th>Rig</th><th>Outcome</th></tr></thead><tbody id="recent-tbody"></tbody></table></div></div>
+    <div class="card"><h3>Development Required — Action Required</h3><div id="dr-list"></div></div>
+  </div>
+</div>
+
+<!-- ═══ NEW ASSESSMENT ═══ -->
+<div id="page-assess" class="page">
+  <div class="section-title">✅ New VOC Assessment</div>
+  <div id="assess-step-setup" class="assessment-step active">
+    <div class="card" style="max-width:680px">
+      <h3>Assessment Setup</h3>
+      <div class="grid2">
+        <div class="form-group">
+          <label>Assessor *</label>
+          <select id="setup-assessor"></select>
+        </div>
+        <div class="form-group">
+          <label>Assessment Date *</label>
+          <input type="date" id="setup-date">
+        </div>
+        <div class="form-group">
+          <label>Assessee Name *</label>
+          <input type="text" id="setup-assessee-name" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Employee ID / Badge No.</label>
+          <input type="text" id="setup-emp-id" placeholder="e.g. EMP-1042">
+        </div>
+        <div class="form-group">
+          <label>Rig / Location *</label>
+          <select id="setup-rig"></select>
+        </div>
+        <div class="form-group">
+          <label>Role / Trade</label>
+          <input type="text" id="setup-role" placeholder="e.g. Roughneck">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>VOC Activity *</label>
+        <select id="setup-activity"></select>
+      </div>
+      <div class="form-group">
+        <label>Assessment Type</label>
+        <select id="setup-type">
+          <option>Initial</option>
+          <option>Routine (Annual)</option>
+          <option>Post-Incident</option>
+          <option>Triggered (Gap Identified)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fit to Work Clearance Confirmed?</label>
+        <select id="setup-ftw">
+          <option value="yes">Yes — FTW confirmed</option>
+          <option value="no">No — NOT confirmed (assessment cannot proceed)</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;align-items:center">
+        <button class="btn btn-primary" id="btn-start-assess" onclick="startAssessment()">Begin Assessment →</button>
+        <button class="btn btn-outline" onclick="printBlankForm()">🖨️ Print Blank Form</button>
+        <label class="btn btn-outline" style="cursor:pointer;margin:0">📷 Upload Scanned Form
+          <input type="file" accept="image/*" style="display:none" onchange="handleScanUpload(this)">
+        </label>
+      </div>
+    </div>
+  </div>
+  <div id="assess-step-score" class="assessment-step">
+    <div id="outcome-preview">
+      <span id="preview-info">Assessment in progress...</span>
+      <span id="preview-outcome-live">⏳ Pending</span>
+    </div>
+    <div id="score-sections"></div>
+    <div style="padding:20px 0;display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="backToSetup()">← Back</button>
+      <button class="btn btn-primary" id="btn-finish-score" onclick="finishScoring()">Calculate Outcome →</button>
+    </div>
+  </div>
+  <div id="assess-step-outcome" class="assessment-step">
+    <div id="outcome-display"></div>
+    <div class="card mt16" style="max-width:680px;display:none" id="coaching-log-card">
+      <h3>📋 Coaching &amp; Feedback Log</h3>
+      <p class="small" style="margin-bottom:12px">Items where coaching was provided during this assessment (score = 1). This log is the formal record of coaching conducted. Required for all CwC outcomes.</p>
+      <div id="coaching-log-content"></div>
+    </div>
+  <div class="card mt16" style="max-width:680px">
+      <h3>Assessor Notes</h3>
+      <div class="form-group">
+        <textarea id="assess-notes" placeholder="Optional: observation notes, areas coached, context..."></textarea>
+      </div>
+      <div id="reassess-field" style="display:none">
+        <div class="form-group">
+          <label>Reassessment Due Date (Development Required)</label>
+          <input type="date" id="assess-reassess-date">
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="backToScoring()">← Review Scores</button>
+        <button class="btn btn-success" onclick="saveAssessment()">✓ Save to Register</button>
+        <button class="btn btn-outline no-print" onclick="printAssessment()">🖨️ Print PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ REGISTER ═══ -->
+<div id="page-register" class="page">
+  <div class="section-title">📋 VOC Assessment Register</div>
+  <div class="filter-bar">
+    <select id="reg-filter-rig"><option value="">All Rigs</option></select>
+    <select id="reg-filter-activity"><option value="">All Activities</option></select>
+    <select id="reg-filter-outcome"><option value="">All Outcomes</option><option>Verified Competent</option><option>Competent with Coaching</option><option>Development Required</option></select>
+    <select id="reg-filter-assessor"><option value="">All Assessors</option></select>
+    <input type="text" id="reg-filter-name" placeholder="Search name..." style="min-width:160px">
+    <button class="btn btn-outline btn-sm" onclick="clearRegFilters()">Clear</button>
+    <button class="btn btn-primary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+    <span id="reg-count" class="small"></span>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table class="data-table" id="register-table">
+        <thead><tr>
+          <th>ID</th><th>Date</th><th>Assessee</th><th>Role</th><th>Rig</th>
+          <th>Activity</th><th>Type</th><th>Assessor</th><th>Outcome</th><th>Reassess By</th>
+        </tr></thead>
+        <tbody id="register-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FLEET HEAT MAP ═══ -->
+<div id="page-heatmap" class="page">
+  <div class="section-title">🗺️ Fleet Competency Heat Map</div>
+  <div class="filter-bar">
+    <label>View:</label>
+    <select id="hm-view" onchange="renderHeatMap()">
+      <option value="stacked">Stacked (VC / CwC / DR)</option>
+      <option value="vc-pct">% Verified Competent only</option>
+    </select>
+  </div>
+  <div class="card mb16">
+    <h3>Outcomes by Rig × Activity (stacked bar)</h3><div style="position:relative;height:320px;overflow:hidden"><canvas id="chart-heatmap"></canvas></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Rig Performance Summary</h3>
+      <table class="data-table" id="rig-summary-table">
+        <thead><tr><th>Rig</th><th>Total</th><th>VC %</th><th>CwC %</th><th>DR %</th><th>At Risk</th></tr></thead>
+        <tbody id="rig-summary-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Activity Risk Ranking (Highest DR %)</h3>
+      <table class="data-table" id="activity-risk-table">
+        <thead><tr><th>#</th><th>Activity</th><th>DR %</th><th>CwC %</th><th>Total</th></tr></thead>
+        <tbody id="activity-risk-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ INDIVIDUAL ═══ -->
+<div id="page-individual" class="page">
+  <div class="section-title">👤 Individual Competency Profile</div>
+  <div class="filter-bar">
+    <input type="text" id="ind-search" placeholder="Search by name or employee ID..." style="min-width:260px" oninput="searchIndividual()">
+    <select id="ind-rig-filter" onchange="searchIndividual()"><option value="">All Rigs</option></select>
+  </div>
+  <div id="ind-results"></div>
+  <div id="ind-profile" style="display:none">
+    <div class="grid2 mb16">
+      <div class="card" id="ind-profile-card"></div>
+      <div class="card">
+        <h3>Competency Status — All Activities</h3>
+        <div id="ind-activity-list"></div>
+      </div>
+    </div>
+    <div class="card"><h3>Assessment History</h3><div class="tbl-wrap"><table class="data-table" id="ind-history-table"><thead><tr><th>Date</th><th>Activity</th><th>Assessor</th><th>Outcome</th><th>Type</th></tr></thead><tbody id="ind-history-tbody"></tbody></table></div></div>
+  </div>
+  <div id="ind-search-results-list"></div>
+</div>
+
+<!-- ═══ GAP ANALYSIS ═══ -->
+<div id="page-gaps" class="page">
+  <div class="section-title">⚠️ Gap Analysis</div>
+  <div class="kpi-row" id="gap-kpi-row"></div>
+  <div class="grid2 mb16">
+    <div class="card">
+      <h3>🔴 Development Required — Pending Reassessment</h3>
+      <div id="gap-dr-list"></div>
+    </div>
+    <div class="card">
+      <h3>📅 Overdue Reassessments</h3>
+      <div id="gap-overdue-list"></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>High-Risk Activities (by DR Rate)</h3>
+      <div id="gap-activity-risk"></div>
+    </div>
+    <div class="card">
+      <h3>Rigs with Outstanding Gaps</h3>
+      <div id="gap-rig-risk"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ASSESSOR REPORT ═══ -->
+<div id="page-assessors" class="page">
+  <div class="section-title">🔍 Assessor Quality & Calibration Report</div>
+  <div class="card mb16">
+    <h3>Understanding This Report</h3>
+    <p style="font-size:12px;color:#555;line-height:1.6">
+      This report analyses assessor performance to identify calibration issues, inconsistencies, and quality concerns.
+      <strong>Rubber-stamping</strong> is flagged when an assessor's average score is significantly higher than the fleet mean, suggesting insufficient rigour.
+      <strong>Calibration Index</strong> compares each assessor's score distributions against the fleet average for the same activities — a high index suggests over-lenient or over-strict scoring.
+    </p>
+  </div>
+  <div class="card mb16">
+    <h3>Fleet-Level Score Distribution</h3><div style="position:relative;height:220px;overflow:hidden"><canvas id="chart-score-dist"></canvas></div>
+  </div>
+  <div id="assessor-grid-container" class="assessor-grid"></div>
+</div>
+
+
+<!-- ═══ SETTINGS ═══ -->
+<div id="page-settings" class="page">
+  <div class="section-title">⚙️ Settings &amp; Configuration</div>
+  <div class="settings-section">
+    <h3>📊 Google Sheets Integration</h3>
+    <p style="font-size:13px;color:#555;margin-bottom:14px">Connect to a Google Apps Script web app to automatically sync every saved assessment to Google Sheets for trending, reporting, and offline backup.</p>
+    <div class="form-group" style="max-width:560px">
+      <label>Google Apps Script Web App URL</label>
+      <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/AKfyc..." style="font-size:12px">
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-primary btn-sm" onclick="saveGSUrl()">Save URL</button>
+      <button class="btn btn-outline btn-sm" onclick="testGSConnection()">Test Connection</button>
+      <span id="gs-status" class="small" style="color:#888"></span>
+    </div>
+    <div style="margin-top:16px;padding:14px;background:#f4f6f9;border-radius:6px;font-size:12px;line-height:2">
+      <strong>Setup Instructions:</strong><br>
+      1. Open <a href="https://script.google.com" target="_blank" style="color:var(--bhdc-mid)">script.google.com</a> — create a new project named "VOCGuard".<br>
+      2. Download the Apps Script code using the button below and paste it into the script editor (Code.gs).<br>
+      3. Click <strong>Deploy → New Deployment → Web App</strong>. Execute as: Me. Who has access: Anyone.<br>
+      4. Authorise the permissions, then copy the deployment URL and paste it above.<br>
+      5. Click Test Connection — if successful you'll see a green confirmation.<br>
+      <br>
+      <button class="btn btn-outline btn-sm" onclick="downloadAppScript()">⬇ Download Apps Script (.gs)</button>
+    </div>
+  </div>
+  <div class="settings-section">
+    <h3>🖥️ Display Settings</h3>
+    <div class="form-group" style="max-width:320px">
+      <label>Demo Data Mode</label>
+      <select id="demo-toggle" onchange="toggleDemo()">
+        <option value="on">Demo data ON (testing / review mode)</option>
+        <option value="off">Demo data OFF (live assessments only)</option>
+      </select>
+    </div>
+    <p class="small" style="margin-top:6px">Switch off demo data when you're ready to use VOCGuard for live assessments. The register will show only real saved assessments.</p>
+  </div>
+  <div class="settings-section">
+    <h3>ℹ️ About VOCGuard</h3>
+    <table class="data-table" style="max-width:440px">
+      <tr><td style="font-weight:600;padding:6px 12px;width:160px">Version</td><td style="padding:6px 12px">2.0 — March 2026</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">System</td><td style="padding:6px 12px">BHDC HSE Management System</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">Governing Doc</td><td style="padding:6px 12px">BHDC-HSE-TRN-PRO-001 Rev 03</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">VOC Activities</td><td style="padding:6px 12px">11 (CHK-001 to CHK-011)</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">Assessors</td><td style="padding:6px 12px">9 (4 × Rig 117, 4 × Rig 118, HSE Mgr)</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">New in v2</td><td style="padding:6px 12px">Google Sheets sync, trend charts, print forms, coaching log</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">Live URL</td><td style="padding:6px 12px"><a href="https://thejadebuddha.github.io/VOCGuard/" target="_blank" style="color:#2E6DA4">https://thejadebuddha.github.io/VOCGuard/</a></td></tr>
+    </table>
+  </div>
+</div>
+
+</div><!-- /#main -->
+
+<!-- ═══ MODAL (Print Report) ═══ -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-header">
+      <h2 id="modal-title">VOC Assessment Record</h2>
+      <button id="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body"></div>
+    <div id="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// DATA CONSTANTS
+// ════════════════════════════════════════════════════════════════════════════
+
+const CHECKLISTS = {"CHK-001":{"id":"CHK-001","name":"Manual Handling","items":[{"section":"A","type":"verbal","text":"Identify at least 3 risk factors that increase manual handling injury risk (load, environment, task, individual).","notes":"Accept: weight, awkward posture, repetition, restricted space, slippery surface, fatigue, pre-existing injury. Must name at least 3.","id":"CHK-001-00"},{"section":"A","type":"verbal","text":"Describe when mechanical handling aids (e.g. trolleys, gin wheels, chain blocks) must be used instead of manual lifting.","notes":"Correct: loads exceeding safe manual limits (typically >25kg), awkward shape, confined space preventing correct posture, repetitive heavy lifts. Assessor prompts if needed.","id":"CHK-001-01"},{"section":"A","type":"verbal","text":"Describe how you would prepare for a manual handling task before attempting the lift.","notes":"Accept: clear the path, check grip, estimate weight, plan rest points, request assistance, stretch/warm up. At least 3 preparation steps required.","id":"CHK-001-02"},{"section":"B","type":"critical","text":"Nudge or test lift performed before committing to full load — assesses weight before full commitment.","notes":"Assessor watches for assessee testing load before committing body weight. Absence of this — going straight into full lift with no test — is a Critical Gap.","id":"CHK-001-03"},{"section":"B","type":"critical","text":"Lumbar lock maintained throughout lift — neutral spine, no rounding of lower back at any point during lift.","notes":"Watch for: rounding the lower back, jerking movements, twisting during load. Any of these = 0.","id":"CHK-001-04"},{"section":"B","type":"critical","text":"Load held in the Power Zone — between mid-thigh and mid-chest, close to body.","notes":"Load held at arm's length or above shoulder = 0. Load hugged close to body at mid-torso height = 2.","id":"CHK-001-05"},{"section":"B","type":"critical","text":"Pivot / no-twist technique — feet repositioned to change direction, no torso rotation under load.","notes":"Any twist of the spine while holding the load = 0. Assessee should move feet to change direction.","id":"CHK-001-06"},{"section":"B","type":"critical","text":"Stable base established — feet shoulder-width apart, appropriate footwear, stable surface confirmed before lift.","notes":"Unstable footing, feet together, loose materials under feet without checking = 0.","id":"CHK-001-07"},{"section":"C","type":"supporting","text":"Stop Work Authority invoked when load exceeds safe limit or conditions deteriorate mid-task.","notes":"May not be observable during a single task — assess by asking scenario: 'What would you do if you realised the load was heavier than expected mid-lift?' Correct: set down, reassess, request help.","id":"CHK-001-08"},{"section":"C","type":"supporting","text":"Pace controlled throughout — no rushing, no jerking at end of movement.","notes":"Rushing, throwing down the load, or jerking at placement = 1 with coaching. Assessor intervenes if risk of injury is present.","id":"CHK-001-09"},{"section":"C","type":"supporting","text":"Refused to proceed when load was unsafe — demonstrated willingness to seek mechanical assistance.","notes":"If opportunity arises during assessment: assessee should proactively flag and request help rather than struggling. Coach if not demonstrated.","id":"CHK-001-10"}]},"CHK-002":{"id":"CHK-002","name":"Working at Heights","items":[{"section":"A","type":"verbal","text":"Identify at least 3 fall scenarios specific to rig operations (e.g., monkey board, V-door, catwalk, tank tops).","notes":"Must name at least 3 rig-specific locations or scenarios. General answers (ladders, scaffolding) alone are insufficient — rig context required.","id":"CHK-002-00"},{"section":"A","type":"verbal","text":"Explain the 100% tie-off rule and when it applies.","notes":"100% tie-off = one lanyard must always be connected before disconnecting the other. Applies at all times above 1.8m where fall arrest anchor is available. One-Hand Rule: disconnecting one lanyard before connecting the second = Critical Failure.","id":"CHK-002-01"},{"section":"A","type":"verbal","text":"Describe the hierarchy of fall controls (elimination → engineering → PPE) and why PPE is the last resort.","notes":"Accept: avoid WaH if possible, use guardrails/platforms before harness/lanyard, PPE is last line of defence only. Must explain 'last resort' principle.","id":"CHK-002-02"},{"section":"A","type":"verbal","text":"Name 2 conditions that would require you to stop work at height.","notes":"Accept: anchor point integrity in doubt, PFPE damaged, weather (wind >28mph/strong gusts), equipment malfunction, harness defect, inadequate anchorage, fatigue. Any 2 valid conditions.","id":"CHK-002-03"},{"section":"B","type":"critical","text":"100% connection maintained — at least one lanyard anchor at all times. No gap between connections.","notes":"THE critical behaviour. Any moment of 0% tie-off = immediate Critical Gap. One-Hand Rule applies at all times. Intervene immediately if observed.","id":"CHK-002-04"},{"section":"B","type":"critical","text":"Anchor point suitability verified before connecting — checks that anchor is rated, structural, and properly rigged.","notes":"Connecting to unverified anchors (handrails, process pipework, temporary structures not rated for fall arrest) = 0. Assessor watches what assessee clips to.","id":"CHK-002-05"},{"section":"B","type":"critical","text":"Harness integrity checked before use — D-ring, stitching, buckles, straps inspected for damage.","notes":"Donning harness without inspection = 0. Inspection must cover: D-ring positioning, stitching condition, buckle function, worn/frayed webbing. At least 3 items checked.","id":"CHK-002-06"},{"section":"B","type":"critical","text":"Body positioning and centre of gravity managed — no leaning over anchor above waist height without backup connection.","notes":"Leaning outboard with single lanyard stretched to limit = 0. Should always maintain secondary connection or reposition anchor before reaching limit.","id":"CHK-002-07"},{"section":"B","type":"critical","text":"Dropped Object prevention — tools secured (lanyarded or in tool bag) before and during work at height.","notes":"Any unsecured tool/item taken to height without securing = 0. Exclusion zone below must be confirmed before work commences.","id":"CHK-002-08"},{"section":"C","type":"supporting","text":"Pre-task anchor verification completed — confirms anchor is rated, accessible, and that fall clearance is adequate.","notes":"Assessee should calculate or confirm fall clearance (lanyard length + deceleration distance + height of person + safety margin) before starting. Coach if absent.","id":"CHK-002-09"},{"section":"C","type":"supporting","text":"Early repositioning — moves to new anchor before stretching current lanyard to the end of its travel, maintaining control of fall arc.","notes":"Late repositioning (stretching to full lanyard extension before moving anchor) = coaching. Teach 70% rule — reposition before reaching 70% of maximum extension.","id":"CHK-002-10"},{"section":"C","type":"supporting","text":"Hazard advocacy — proactively flags WaH hazards to other personnel and objects/equipment below.","notes":"Assessee should announce work at height to personnel below, establish exclusion zone, communicate with banksman. Passive or non-communicative = coaching.","id":"CHK-002-11"}]},"CHK-003":{"id":"CHK-003","name":"Hand & Finger Safety","items":[{"section":"A","type":"verbal","text":"Identify 3 primary Line of Fire / pinch point hazards on a drilling rig.","notes":"Accept: tong handles, chain/cathead operations, make-up/break-out, elevator handling, tong backups, iron roughneck, catwalk operations, drawworks. Must name 3 rig-specific examples.","id":"CHK-003-00"},{"section":"A","type":"verbal","text":"Explain what 'energy release' means in the context of pinch point injuries and give 2 examples.","notes":"Accept: stored mechanical energy releasing suddenly — springs, tension, gravity-loaded equipment. Examples: tong arm kick, unexpected pipe rotation, iron roughneck jaw activation. Must explain stored energy concept.","id":"CHK-003-01"},{"section":"A","type":"verbal","text":"Describe 3 safe hand positioning techniques for high-risk rig tasks.","notes":"Accept: thumbs-out grip, 'T-grip' on tong handles, keep hands above the load's plane of movement, hands-off policy for connection/make-up, use of handling tools (tong handles, pipe wrenches with extensions). Must name 3.","id":"CHK-003-02"},{"section":"A","type":"verbal","text":"Name 2 triggers that should cause you to Stop Work during a hand-intensive task.","notes":"Accept: unexpected equipment movement, pressure/tension building unexpectedly, poor visibility of pinch zone, second person not in position, distraction during critical moment, PPE inadequacy. Any 2 valid triggers.","id":"CHK-003-03"},{"section":"B","type":"critical","text":"Hands kept out of Line of Fire — no hand or finger positioned in path of potential energy release or pinch zone during active operations.","notes":"THE critical behaviour. Any hand placement in the path of moving equipment, swing arc, or pinch zone during active energy = 0. Intervene immediately.","id":"CHK-003-04"},{"section":"B","type":"critical","text":"Pinch points identified and communicated before starting task — verbally confirms known pinch hazards to co-workers.","notes":"No identification of pinch hazards before starting a hand-intensive task = 0. Must verbally acknowledge or point out at least the primary pinch zone.","id":"CHK-003-05"},{"section":"B","type":"critical","text":"Hands-Off Policy applied at make-up / break-out — hands removed from pipe/tool before rotation or sudden load is applied.","notes":"Hands on connection while rotation is applied, or hands on pipe while elevator closes = 0. Strict hands-off before any power is applied to a joint.","id":"CHK-003-06"},{"section":"B","type":"critical","text":"Body position maintained outside swing arc / line of travel of tools and equipment.","notes":"Standing in or moving into the swing arc of a tong, in the path of a moving travelling block, or at the back of a cathead operation = 0.","id":"CHK-003-07"},{"section":"B","type":"critical","text":"Correct tool selection — appropriate tool used for task; no improvised grips that expose hands to pinch/crush.","notes":"Using hands where a handling tool should be used (e.g., bare hands on pipe threads, hands inside tong jaws) = 0. Tool substitution that eliminates Line of Fire = correct.","id":"CHK-003-08"},{"section":"C","type":"supporting","text":"Pre-task pause performed — brief stop to identify pinch/LOF hazards before starting task.","notes":"Assessee should pause, look, and think before starting any hand-intensive task. This should be habitual. Absence = coaching on 'Take 2' or equivalent pause-and-check culture.","id":"CHK-003-09"},{"section":"C","type":"supporting","text":"Proactively intervened when co-worker's hands were in the Line of Fire.","notes":"Observable if co-worker is included in assessment scenario. Coaching provided on responsibility to intervene for others — 'See it, say it'.","id":"CHK-003-10"},{"section":"C","type":"supporting","text":"Communicated clearly with all team members before and during task — confirmed roles and positions.","notes":"Silent task performance with no communication = coaching. Must confirm who does what, when, and where before high-risk hand tasks.","id":"CHK-003-11"}]},"CHK-004":{"id":"CHK-004","name":"Mechanical Lifting","items":[{"section":"A","type":"verbal","text":"Describe the pre-lift briefing requirements before any non-routine lift.","notes":"Accept: load weight, rigging selection, lift plan, personnel positioning, exclusion zones, signal communication, emergency procedure, Responsible Person identified. Must name at least 5 elements.","id":"CHK-004-00"},{"section":"A","type":"verbal","text":"Explain how to calculate the Working Load Limit (WLL) for a standard 2-leg sling bridle.","notes":"Accept: WLL of bridle depends on sling angle. At 60° included angle: WLL = 1.0 × single sling rating. At 90°: WLL = 0.7 × rating. At 120°: WLL = 0.5 × rating. Key concept: sling angle degrades WLL.","id":"CHK-004-01"},{"section":"A","type":"verbal","text":"Identify the required pre-use inspection points for a wire rope sling.","notes":"Accept: broken wires (discard if >10% in one lay), kinks, crushing, corrosion, end fittings, core damage, reduction in diameter. Must name at least 4.","id":"CHK-004-02"},{"section":"B","type":"critical","text":"Exclusion zone established and enforced — no personnel under suspended load at any time.","notes":"Any personnel standing under or walking under a suspended load = 0. Intervene immediately. Exclusion zone must be visibly demarcated or communicated before lift.","id":"CHK-004-03"},{"section":"B","type":"critical","text":"Sling inspection completed before rigging — checks condition, rating tag, and suitability for the load.","notes":"No inspection of lifting accessories before use = 0. Must check: rating tag readable, no visible defects (kinks, broken wires, cuts), correct type for load.","id":"CHK-004-04"},{"section":"B","type":"critical","text":"Lift plan / tag line use — load controlled throughout lift; tag lines used to prevent uncontrolled rotation or swing.","notes":"Uncontrolled load swing with personnel nearby = 0. Tag lines must be in use for loads that can rotate or swing into exclusion zone.","id":"CHK-004-05"},{"section":"B","type":"critical","text":"Clear crane communication — correct hand signals or radio protocol used; no lift unless Lift Supervisor/Banksman is in clear communication with operator.","notes":"Lift proceeding without clear communication or with unauthorised personnel directing = 0. All lifts must be directed by a single designated banksman/Lift Supervisor.","id":"CHK-004-06"},{"section":"B","type":"critical","text":"Rigging sling angles within safe limits — no sling angle greater than 120° included angle observed.","notes":"Sling angle exceeding 120° degrades WLL below 50% — load may exceed rigging capacity. Assessor must check sling geometry during rigging.","id":"CHK-004-07"},{"section":"C","type":"supporting","text":"Load weight confirmed before lift — either from packing list, weighing, or prior known record.","notes":"Estimating load weight by eye = coaching. Confirm through documentation or prior weighing. Undocumented loads should be treated as 'unknown' and conservatively estimated.","id":"CHK-004-08"},{"section":"C","type":"supporting","text":"Test lift performed — load raised to 100-200mm and held for condition check before full lift.","notes":"Proceeding directly to full-height lift without a preliminary check = coaching. Test lift allows load redistribution, rigging check under tension, and equipment confirmation.","id":"CHK-004-09"},{"section":"C","type":"supporting","text":"Personnel briefing completed before lift — all ground crew and operator aware of lift scope and their position.","notes":"No verbal briefing of ground crew = coaching. All personnel must know their role and position before lift commences.","id":"CHK-004-10"}]},"CHK-005":{"id":"CHK-005","name":"Confined Space Entry","items":[{"section":"A","type":"verbal","text":"Define a Confined Space and give 3 examples found on a drilling rig.","notes":"Definition must include: limited opening for entry/exit, not designed for continuous occupancy, potential for hazardous atmosphere. Rig examples: tanks, sumps, mud pit, bottom of structural vessels, enclosed cellars, skids with limited access. Must give 3 valid examples.","id":"CHK-005-00"},{"section":"A","type":"verbal","text":"Describe the atmospheric testing sequence before CSE — what gases, in what order?","notes":"Correct order: 1) Oxygen (must be 19.5–23.5%), 2) Combustible gases / LEL (must be <10% LEL), 3) Toxic gases (H2S — must be <10ppm for entry; CO, others as appropriate). Must state all 3 categories in order.","id":"CHK-005-01"},{"section":"A","type":"verbal","text":"Explain the Attendant's responsibilities during a confined space entry.","notes":"Must include: maintain continuous communication with entrant, monitor atmosphere, never enter to rescue (call emergency rescue team), maintain personnel count, know how to initiate emergency rescue, control access to the space.","id":"CHK-005-02"},{"section":"B","type":"critical","text":"Valid Confined Space Entry Permit obtained and confirmed before entry — permit is current, signed by Responsible Person, and conditions match actuals.","notes":"Entry without a valid, current CSE permit = 0. Intervene before entry. Permit must be verified against current atmospheric conditions and on-site personnel.","id":"CHK-005-03"},{"section":"B","type":"critical","text":"Atmospheric testing completed and results within acceptable limits before entry — documented on permit.","notes":"Entry without completed atmospheric testing = 0. Testing must be completed by authorised gas tester within the timeframe specified on the permit. Results documented.","id":"CHK-005-04"},{"section":"B","type":"critical","text":"Rescue arrangement confirmed before entry — rescue equipment present, rescue team or procedure in place, emergency contacts confirmed.","notes":"Entry without confirmed rescue arrangement = 0. 'Somebody will come' is not an acceptable rescue arrangement. Rescue must be pre-planned and resources present.","id":"CHK-005-05"},{"section":"B","type":"critical","text":"Attendant remains at entry point throughout — does not leave post, does not enter to assist.","notes":"Attendant abandoning post or attempting self-rescue entry = 0. Attendant's job is to alert, not to rescue. If Attendant leaves, entrant's safety is compromised.","id":"CHK-005-06"},{"section":"B","type":"critical","text":"All isolations confirmed closed before entry — lockout verified by entrant personally before entering.","notes":"Relying on verbal confirmation from third party that isolations are complete = 0. Entrant must personally verify isolation status before entry.","id":"CHK-005-07"},{"section":"C","type":"supporting","text":"Ventilation equipment operating and confirmed effective before entry.","notes":"Forced ventilation should be running and confirmed to be mixing the atmosphere (not just blowing into the same corner) before entry. Coaching if not checked or if placement is ineffective.","id":"CHK-005-08"},{"section":"C","type":"critical","text":"Communication maintained throughout entry — check-in intervals agreed and documented before entry; missed check-in immediately triggers emergency procedure. ★ No agreed communication protocol before entry = 0. Critical because attendant cannot detect incapacitation without it.","notes":"Radio contact or voice communication must be maintained. Agreed check-in interval defined before entry. Silence from inside for more than the agreed interval triggers emergency response.","id":"CHK-005-09"},{"section":"C","type":"supporting","text":"Entrant monitoring own atmosphere continuously — personal gas monitor active and worn in the breathing zone.","notes":"Monitor clipped at hip or below = coaching — breathing zone is head/chest area. Must be worn actively and alarm limits understood.","id":"CHK-005-10"}]},"CHK-006":{"id":"CHK-006","name":"DROPS Prevention","items":[{"section":"A","type":"verbal","text":"Explain the DROPS hierarchy — primary vs. secondary retention.","notes":"Primary retention: equipment/fitting designed or installed so it cannot fall (e.g., pinned connections, positive retention, locked caps). Secondary retention: safety device to catch if primary fails (e.g., safety wire, rope, sling, net). Both are required for items above work areas.","id":"CHK-006-00"},{"section":"A","type":"verbal","text":"Describe 3 common causes of dropped objects on a drilling rig.","notes":"Accept: inadequate secondary retention, corrosion/fatigue of primary retention, tools not secured when taken to height, personnel error during maintenance, failure to replace retention after inspection, vibration-induced loosening, overloading of racks/shelves. Must name 3.","id":"CHK-006-01"},{"section":"A","type":"verbal","text":"What is a DROPS inspection and how frequently should it be conducted?","notes":"DROPS inspection = formal inspection of all items and equipment above work areas to verify primary and secondary retention integrity. Minimum frequency: at each rig move, before each new well spud, and on a scheduled basis (weekly for rig floor, monthly for derrick). Accept site-specific BHDC schedule.","id":"CHK-006-02"},{"section":"B","type":"critical","text":"Tools and equipment secured with secondary retention when taken to height — all items have a lanyard, tether, or holster.","notes":"Any tool taken above the rig floor without secondary retention (lanyard to wrist/belt or dedicated tool bag) = 0. This is non-negotiable above work level.","id":"CHK-006-03"},{"section":"B","type":"critical","text":"Dropped object exclusion zone established below work area — personnel cleared from below before any overhead work begins.","notes":"Commencing overhead work without establishing and communicating an exclusion zone below = 0. Exclusion zone must match the drop radius of the work area.","id":"CHK-006-04"},{"section":"B","type":"critical","text":"DROPS inspection completed before commencing work at height — checks all retention devices in the work area before starting.","notes":"Climbing to work area without conducting retention check = 0. Must verify secondary retention on tools AND check integrity of fixtures/fittings already installed in work area.","id":"CHK-006-05"},{"section":"C","type":"critical","text":"Dropped object reporting — assessed via scenario: “If a tool you were carrying fell from height, what would you do?” Correct: stop work immediately, make area safe, report to HSE Supervisor and Tool Pusher on the day regardless of size. Rote answer without understanding = coaching. Incorrect or dismissive response = 0. (Cannot be directly observed unless a drop occurs during assessment.)","notes":"Observable if a drop occurs during assessment. Unreported or minimised drops = 0. The DROPS programme only works if all drops, near-misses, and secondary retention failures are reported.","id":"CHK-006-06"},{"section":"C","type":"supporting","text":"Tool inventory completed before and after work at height — all tools accounted for.","notes":"Using a tool bag or tally sheet to count tools in/out = best practice. Coach if assessee brings tools up without tracking and may not know if a tool is missing at end of task.","id":"CHK-006-07"},{"section":"C","type":"supporting","text":"Proactively identified and reported a DROPS hazard during the assessment.","notes":"If assessee notices a loose fitting, missing retention device, or unsecured item and reports it = strong positive indicator. Coach on proactive DROPS observation culture.","id":"CHK-006-08"},{"section":"C","type":"supporting","text":"Correct tool bag / holster used — tool not tucked into clothing or held in hand while ascending/descending.","notes":"Tools in clothing pockets, tucked into belt without tether, or carried in bare hands while climbing = coaching. Dedicated secured carry method required.","id":"CHK-006-09"}]},"CHK-007":{"id":"CHK-007","name":"Isolation & LOTO","items":[{"section":"A","type":"verbal","text":"Describe the LOTO process from work identification to clearance — main steps in order.","notes":"Accept in order: 1) Identify energy sources, 2) Notify affected personnel, 3) Shut down equipment, 4) Isolate all energy sources, 5) Apply lock and tag (personal lock), 6) Release/restrain stored energy, 7) Verify isolation (test for zero energy state), 8) Perform work, 9) Remove lock/tag (by the person who applied it), 10) Re-energise and verify. All 10 steps or equivalent.","id":"CHK-007-00"},{"section":"A","type":"verbal","text":"Explain the difference between a Personal Lock and a Supervisor's (or Group) Lockout.","notes":"Personal Lock: applied by each individual worker on the isolation point — their own lock, their own key. They are the only person who can remove it. Group/Supervisor Lock: used when team or shift changes; entire group is covered by a single box and group hasp. All workers add personal locks to the hasp.","id":"CHK-007-01"},{"section":"A","type":"verbal","text":"What is stored energy and give 3 examples relevant to drilling equipment?","notes":"Accept: any energy that remains after power is disconnected. Examples: hydraulic pressure in lines, spring-loaded valves, compressed gas in accumulators, raised equipment under gravity (travelling block), rotating machinery (flywheel), capacitance in electrical circuits, wellbore pressure. Must name 3.","id":"CHK-007-02"},{"section":"B","type":"critical","text":"Personal lock applied by the worker before work begins — lock carries name/ID tag, only that worker can remove it.","notes":"Work commencing without personal lock applied = 0. The worker's personal lock is their ONLY guarantee of isolation. No lock = no work. Tag only (no lock) = 0.","id":"CHK-007-03"},{"section":"B","type":"critical","text":"Zero Energy State verified before touching equipment — test performed to confirm energy is absent (test push button, check pressure gauge, try to operate valve).","notes":"Working on equipment without verifying zero energy state = 0. Testing must be active — looking at a tag is insufficient. Positive test of zero energy required.","id":"CHK-007-04"},{"section":"B","type":"critical","text":"All energy sources identified and isolated — multiple energy types considered (electrical, hydraulic, pneumatic, gravity, stored mechanical).","notes":"Isolating electrical only and missing hydraulic/pneumatic = 0. All energy sources must be identified from LOTO register or SOP. Partial isolation = Critical Gap.","id":"CHK-007-05"},{"section":"B","type":"critical","text":"Lock/tag only removed by the person who applied it — no removal by supervisor or third party on behalf of the worker.","notes":"Removing another person's lock = 0. This is a fundamental safety rule with no exceptions other than the formal rescue/emergency LOTO removal procedure (which requires approval from HSE Manager and is documented).","id":"CHK-007-06"},{"section":"B","type":"critical","text":"Stored energy released / restrained before work — hydraulic pressure bled, gravity loads blocked, springs compressed and pinned.","notes":"Relying on isolation valve alone without verifying and relieving stored energy = 0. Must demonstrate awareness and action to release/block stored energy.","id":"CHK-007-07"},{"section":"C","type":"supporting","text":"Communicated LOTO status to all affected personnel before commencing isolation.","notes":"Silent LOTO with no communication to nearby workers = coaching. All personnel working near or on the same system must be aware of the isolation.","id":"CHK-007-08"},{"section":"C","type":"supporting","text":"LOTO register / log updated with isolation details.","notes":"Isolation not recorded in LOTO log = coaching. Organisational memory of what is isolated, by whom, since when, is essential for safe clearance of work.","id":"CHK-007-09"},{"section":"C","type":"supporting","text":"Verified that re-energisation area is clear before removing personal lock.","notes":"Removing lock without checking the work area is clear and tools/personnel are safely clear of the equipment = coaching. Clearance check must precede lock removal.","id":"CHK-007-10"}]},"CHK-008":{"id":"CHK-008","name":"H2S Emergency Response","items":[{"section":"A","type":"verbal","text":"State the H2S concentration thresholds relevant to BHDC operations — TWA, STEL, IDLH, and immediately dangerous.","notes":"Accept: TWA (8hr) = 1ppm; STEL (15min) = 5ppm; IDLH = 50ppm (or 100ppm OSHA — accept either); Immediately fatal at high concentrations (500–1000ppm). Key: assessee must know the STEL and IDLH values and understand the rapid incapacitation risk.","id":"CHK-008-00"},{"section":"A","type":"verbal","text":"Describe the H2S emergency muster procedure — what happens when the H2S alarm sounds?","notes":"Must include: stop work, don SCBA (if in affected area), move upwind and crosswind to designated muster point, do not attempt rescue without SCBA, report to muster warden, account for all personnel on POB. Site-specific muster points and wind direction procedures must be known.","id":"CHK-008-01"},{"section":"A","type":"verbal","text":"Explain H2S detection — what personal monitors are in use, where should they be positioned, and what are the alarm set points?","notes":"Personal H2S monitor must be worn in breathing zone (chest/collar level). Alarm set points (site-specific — accept BHDC standard if known, or general: low alarm 5ppm, high alarm 10ppm+). Must describe positioning and alarm set points.","id":"CHK-008-02"},{"section":"B","type":"critical","text":"SCBA donned correctly and within required time — no gaps in face seal, correct SCBA operation.","notes":"Assessee should demonstrate SCBA donning to BHDC standard. Gap in face seal, wrong SCBA connection, failure to open air supply = 0. Target donning time site-specific (typically <60 seconds).","id":"CHK-008-03"},{"section":"B","type":"critical","text":"Move upwind and crosswind immediately on alarm — does not move downwind or remain in potential release area.","notes":"Moving toward the potential release source, moving downwind, or remaining at work location after alarm = 0. Direction of movement is critical — upwind and crosswind from identified release point.","id":"CHK-008-04"},{"section":"B","type":"critical","text":"H2S personal monitor worn in breathing zone and operational before entering H2S risk zone.","notes":"Entering H2S risk area without functional personal monitor in breathing zone = 0. Monitor must be tested/bump-tested and confirmed functional before entry.","id":"CHK-008-05"},{"section":"B","type":"critical","text":"No attempt to rescue without SCBA and without two-person rescue team.","notes":"Attempting solo rescue or rescue without SCBA in H2S area = 0 — potentially fatally dangerous behaviour. Victims of H2S incapacitation must be rescued by a 2-person team with SCBA.","id":"CHK-008-06"},{"section":"C","type":"critical","text":"Wind direction awareness — knows current wind direction and correct muster point without hesitation. ★ Moving in wrong direction during H2S event = potentially fatal; incorrect answer or hesitation = 0. Assessed verbally: “Point to current upwind direction and name your muster point.”","notes":"Assessee should be able to point to current upwind direction and identify the correct muster point without hesitation. Coaching on wind direction checks and site orientation.","id":"CHK-008-07"},{"section":"C","type":"supporting","text":"H2S monitor alarm response demonstrated — knows what to do when low alarm (5ppm) activates vs. high alarm.","notes":"Low alarm: report, increase monitoring, prepare to evacuate. High alarm: evacuate immediately, don SCBA if in area. Coaching if response to alarm level is unclear.","id":"CHK-008-08"},{"section":"C","type":"supporting","text":"Buddy system awareness — confirmed partner location before entering H2S risk area.","notes":"Operating alone in H2S risk area without confirming buddy location = coaching. Buddy system ensures rapid alarm if incapacitation occurs.","id":"CHK-008-09"}]},"CHK-009":{"id":"CHK-009","name":"PTW Application","items":[{"section":"A","type":"verbal","text":"Describe the purpose of the PTW system and what types of work require a permit at BHDC.","notes":"Purpose: controls high-risk non-routine work by ensuring hazards are identified and controls are in place before work starts. Types requiring permit: hot work, cold work (where non-routine), CSE, radiography, WaH above 1.8m, LOTO/isolations, electrical work, excavation, simultaneous operations. Must name at least 5 categories.","id":"CHK-009-00"},{"section":"A","type":"verbal","text":"Explain what you as a worker are required to do before work can begin under a permit.","notes":"Must include: read and understand the permit, attend pre-job briefing, sign/toolbox the permit, check isolations/controls are in place, confirm JSA has been completed for the task, know the emergency procedure, confirm you understand stop-work authority.","id":"CHK-009-01"},{"section":"A","type":"verbal","text":"Describe what would cause you to stop work and suspend a permit.","notes":"Accept: conditions change (gas detection, weather change, adjacent operations, fire, loss of isolation, unexpected hazard), personnel change (untrained worker arrives), work scope changes, request from HSE or Supervisor, SWA invoked by any team member. Must name at least 3 triggers.","id":"CHK-009-02"},{"section":"B","type":"critical","text":"Worker has read, understood, and signed (or thumbprinted) the permit before work begins.","notes":"Starting work without reviewing and acknowledging the permit = 0. Worker must be able to describe the key hazards and controls listed on the permit — not just sign without reading.","id":"CHK-009-03"},{"section":"B","type":"critical","text":"Pre-job briefing attended — worker can describe what hazards were discussed and what controls are in place.","notes":"Worker who cannot describe hazards or controls from the pre-job briefing = 0. The briefing must have been actively participated in, not signed off passively.","id":"CHK-009-04"},{"section":"B","type":"critical","text":"Work stopped immediately if conditions deviate from permit scope — does not self-authorise scope changes.","notes":"Continuing work after conditions change without re-engaging permit issuer = 0. Any deviation from permit conditions requires stop-work and permit review before resuming.","id":"CHK-009-05"},{"section":"B","type":"critical","text":"Isolations and controls verified personally before starting work — does not rely solely on permit paperwork.","notes":"Starting work assuming isolations are in place without personal verification = 0. Worker must confirm that the controls described on the permit are actually in place at the workface.","id":"CHK-009-06"},{"section":"C","type":"supporting","text":"Stop Work Authority understood and willing to invoke — demonstrated understanding that any worker can stop work for safety reasons.","notes":"Assessee hesitates or expresses reluctance to use SWA = coaching. SWA is a right and a responsibility. No penalty for invoking SWA in good faith.","id":"CHK-009-07"},{"section":"C","type":"supporting","text":"Know what to do at end of work / when permit closes — site left in safe condition, permit signed off, Supervisor notified.","notes":"Vague or incorrect end-of-work procedure = coaching. Must include: tools/waste removed, area left clean, permit closed, Supervisor or PTW Authority notified of completion.","id":"CHK-009-08"},{"section":"C","type":"supporting","text":"Communicated with Permit Issuer when work was complete or when a problem arose.","notes":"Closed work without notifying Permit Issuer = coaching. Communication loop must be closed at both ends — start and finish.","id":"CHK-009-09"}]},"CHK-011":{"id":"CHK-011","name":"Journey Management & Safe Driving","items":[{"section":"A","type":"verbal","text":"State the BHDC Journey Management Procedure (BHDC-HSE-OPS-PRO-010) requirements: when is a Journey Management Plan mandatory, what must it contain, and who must approve it before departure?","notes":"Must include: JMP required for all journeys >30 min from base or rig, inter-rig travel, and any desert or remote route. Must contain: destination, planned route, departure time, ETA, check-in schedule and contact number, emergency contacts, supervisor approval. Score 1 if covers most key elements but misses one (e.g., check-in schedule). Score 0 if does not know what a JMP is or when it is required.","id":"CHK-011-00"},{"section":"A","type":"verbal","text":"Explain the QatarEnergy Life-Saving Rule for Driving: what does it absolutely prohibit, and what behaviours does it mandate for all BHDC vehicle users?","notes":"Must include prohibitions: use of handheld mobile phone while driving (zero tolerance), exceeding posted speed limits, driving while fatigued or impaired. Must include mandates: seatbelt for all occupants at all times, compliance with JMP check-in schedule, vehicle pre-inspection before departure. Score 1 if covers phone/speed/seatbelt but misses fatigue or JMP check-in. Score 0 if cannot name the key LSR elements.","id":"CHK-011-01"},{"section":"A","type":"verbal","text":"Identify three high-risk driving scenarios specific to BHDC Qatar operations and state one additional precaution required for each scenario identified.","notes":"Expected: (1) Desert/remote route — reduced speed, buddy system, satellite phone or reliable comms; (2) Rig site access roads — pedestrian hazard, ≤40 kph, sound horn at blind spots; (3) Low visibility / sandstorm — pull over, hazard lights, do not continue if dangerous; (4) Night driving — heightened caution, ensure familiarity with route; (5) Wildlife on road — caution especially near desert roads. Accept any 3 valid scenarios with matching precautions. Score 1 if 2 of 3 have correct precautions.","id":"CHK-011-02"},{"section":"B","type":"critical","text":"Conducts a complete pre-trip vehicle inspection (walk-around demonstration) before a nominated journey — systematically checks: tyre condition and pressure including spare, brake fluid level, all lights (headlights, brake lights, indicators), engine oil and coolant, windscreen and mirrors, seatbelts for all seating positions, fire extinguisher, first aid kit, and emergency contacts card.","notes":"Score 0 if: inspection skipped entirely, safety-critical item (tyres, brakes, lights) missed without correction, or checklist (BHDC-HSE-OPS-FRM-019 or site equivalent) not used. Score 1 if checklist used but 1-2 minor items missed and coaching given. Score 2 if systematic, complete walk-around conducted, all items checked, checklist completed and signed. Do NOT prompt on any safety-critical item before scoring.","id":"CHK-011-03"},{"section":"B","type":"critical","text":"Completes a Journey Management Plan (JMP) for a nominated journey — assessor specifies destination and route; assessee correctly completes all required fields: destination, estimated travel time, route, rest stop plan, emergency contacts, and vehicle details.","notes":"Assessor should nominate a realistic route (e.g. Office to Rig 67). Check all mandatory fields are populated and that the route, timing, and rest stops are credible. Incomplete or missing fields = 0.","id":"CHK-011-04"},{"section":"C","type":"scenario","text":"You are 45 minutes into a desert route and realise you are feeling drowsy. Your destination is 20 minutes ahead. Walk the assessor through your exact response.","notes":"Correct: Pull over immediately in a safe location — do not continue to destination. Activate hazard lights. Contact supervisor to report location and fatigue. Do not resume driving until fatigue has fully passed and supervisor has been informed and cleared resumption. 'Push through — only 20 minutes' = 0. Pulling over but not reporting = 1. Full response with supervisor notification = 2.","id":"CHK-011-05"},{"section":"C","type":"scenario","text":"You are driving on a desert access track at 70 kph when your phone rings. It is your direct supervisor. Describe your exact response — step by step.","notes":"Correct: Do not answer while the vehicle is moving. If it is safe to stop, pull over and stop the vehicle completely before returning the call. If not immediately safe to stop, let it ring — return the call when safely parked. There are no exceptions. 'Hands-free is okay' — clarify BHDC / QE LSR position: no phone use while the vehicle is in motion. 'Pull over, stop, then call back' = 2. Answering while moving in any form = 0.","id":"CHK-011-06"},{"section":"C","type":"scenario","text":"You are driving to Rig 67. Visibility suddenly drops to less than 20 metres due to a sandstorm. Describe your immediate actions.","notes":"Correct: Reduce speed immediately to minimum safe level, activate hazard lights, seek a safe pull-off point and stop the vehicle, do not continue driving in near-zero visibility. Contact supervisor to report location and delay. Stay in vehicle with seatbelt on. Continue driving at low speed in dangerous conditions = 1 (coaching — should stop). Stopping safely and notifying supervisor = 2.","id":"CHK-011-07"},{"section":"C","type":"supporting","text":"State the BHDC seatbelt policy: who is required to wear a seatbelt, and what must the driver do if a passenger refuses to comply?","notes":"Must state: all vehicle occupants, including rear-seat passengers, must wear seatbelts at all times while the vehicle is in motion. Driver is responsible for ensuring all occupants are belted before departure. If a passenger refuses: driver must not depart (or must stop the vehicle) until the passenger complies. Acceptable: mentions rear passengers specifically, and that driver is accountable. Score 0 if driver is not held responsible or if rear passengers are excluded.","id":"CHK-011-08"}]},"CHK-010":{"id":"CHK-010","name":"Heat Stress & Heat Illness Prevention","items":[{"section":"A","type":"verbal","text":"Name the four types of heat illness in order of increasing severity and describe the key symptoms of each.","notes":"Accept in order: (1) Heat Cramps — painful muscle spasms, heavy sweating, usually legs/abdomen; (2) Heat Syncope — dizziness/fainting caused by blood pooling in extremities, loss of consciousness possible; (3) Heat Exhaustion — heavy sweating, cool/pale/clammy skin, fast/weak pulse, nausea, weakness, possible unconsciousness — core temp below 40°C; (4) Heat Stroke — hot/red/dry or damp skin, fast strong pulse, confusion, slurred speech, loss of consciousness — core temp above 40°C, LIFE THREATENING. Must name all four in order and describe at least one symptom per type.","id":"CHK-010-00"},{"section":"A","type":"verbal","text":"Explain the WBGT (Wet Bulb Globe Temperature) system used on QatarEnergy sites — what does it measure and what do the colour zones mean for work and rest ratios?","notes":"WBGT measures the combined effect of temperature, humidity, solar radiation, and air movement on the body. Colour zones (per QP-OHH-STD-012 or site-specific HSE bulletin): GREEN = low risk, normal work; YELLOW = moderate risk, increase water intake, monitor for symptoms; ORANGE = high risk, reduce workload, mandatory rest periods per WBGT chart (e.g. 45 min work / 15 min rest); RED = extreme risk, halt non-essential outdoor work, emergency controls only. Assessee must correctly describe at least 3 zones and the actions triggered by each.","id":"CHK-010-01"},{"section":"A","type":"verbal","text":"State the minimum hydration requirement for outdoor work in Qatar during the summer season. What are the signs of dehydration you would monitor for in your team?","notes":"Minimum hydration: 250ml (1 cup) every 15–20 minutes, or approximately 500ml–1L per hour during physical work. Do NOT drink large volumes infrequently — steady intake is required. Signs of dehydration: dark urine (amber or darker), dry mouth, headache, dizziness, fatigue, reduced urination. Assessee must state 500ml per hour minimum and name at least 3 dehydration signs.","id":"CHK-010-02"},{"section":"A","type":"verbal","text":"Describe the emergency first aid procedure for a colleague you suspect is suffering from heat stroke.","notes":"Must include in order: (1) Call for help / alert supervisor / call Medic immediately — Heat Stroke is a medical emergency; (2) Move victim to shade or cool area; (3) Begin aggressive cooling immediately — wet clothing with cool water, fan, ice packs to neck/armpits/groin; (4) Do NOT give fluids to an unconscious or confused person (aspiration risk); (5) Place in recovery position if unconscious; (6) Maintain cooling until medic arrives. Key: aggressive cooling before EMS arrival is the critical time-sensitive intervention. Any hesitation on cooling = 0.","id":"CHK-010-03"},{"section":"A","type":"verbal","text":"What is heat acclimatisation and what does the BHDC acclimatisation protocol require for new or returning workers?","notes":"Acclimatisation is the physiological process by which the body adapts to heat stress — takes 10–14 days of gradual exposure. New workers and those returning after >2 weeks absence must follow the acclimatisation schedule: Day 1–2: 50% full workload in heat; Day 3–4: 60–70%; Day 5–7: 80%; Day 8–10: 90%; Day 11+: full workload. Workers are at greatest risk of heat illness during the first week. Must describe the gradual workload increase and the reason (physiological adaptation).","id":"CHK-010-04"},{"section":"B","type":"critical","text":"Maintains adequate hydration throughout the work period — drinks approximately 250ml every 15–20 minutes without prompting, does not skip water breaks due to time pressure.","notes":"Worker who refuses water breaks, delays hydration due to task pressure, or relies on thirst as the trigger to drink = 0. Thirst indicates dehydration is already occurring. Proactive, frequent, steady hydration is mandatory. Ask the worker to describe their last water intake — if they cannot recall drinking within 30 minutes, coaching is required.","id":"CHK-010-05"},{"section":"B","type":"critical","text":"Uses scheduled work-rest cycles as required by the current WBGT zone — retreats to shade/cool area for rest periods and does not shorten them.","notes":"Skipping rest periods, returning early from shade, or working through rest under pressure from supervisor = 0. Work-rest ratios under WBGT Orange/Red are non-negotiable safety controls. If assessee states they would skip a rest break to finish the job, score 0.","id":"CHK-010-06"},{"section":"B","type":"critical","text":"Correctly identifies and initiates emergency first aid for suspected heat stroke — begins active cooling immediately while calling for help.","notes":"Observe during drill or scenario assessment. Waiting for medic before starting cooling, or failing to initiate cooling = 0. Active cooling must begin concurrently with calling for help. Giving fluids to an unconscious victim = 0. Time to initiate cooling is the critical variable in heat stroke survival.","id":"CHK-010-07"},{"section":"C","type":"scenario","text":"You notice a co-worker showing signs of heat illness — he is slurring words, appears confused, and has stopped sweating despite the heat. You are the first to notice. Walk the assessor through your immediate actions step by step.","notes":"Correct response must include: (1) Stop work and call for the medic immediately — Heat Stroke is a life-threatening emergency. (2) Alert supervisor and nearby workers. (3) Begin active cooling without waiting for the medic — move to shade, remove excess clothing, apply wet cloths or water to skin, use fan if available. (4) Do NOT give water if the worker is confused or unconscious. Score 0 if: worker waits for medic before cooling, or does not recognise this as Heat Stroke (most serious). Score 1 if calls medic but omits active cooling. Score 2 if correct order and actions stated.","id":"CHK-010-08"},{"section":"C","type":"supporting","text":"Knows current WBGT zone and the work-rest ratio that applies — able to state current heat alert status without being prompted.","notes":"Assessee should be aware of the current WBGT reading/colour displayed on site or communicated in toolbox talk. Coaching if unaware of the heat status for the shift.","id":"CHK-010-09"},{"section":"C","type":"supporting","text":"Wearing appropriate PPE and clothing for heat conditions — light-coloured, breathable, loose-fitting clothing, sun protection (hat, sunscreen) as required by site rules.","notes":"Wearing dark/heavy clothing in full sun without sun protection = coaching. Light-coloured long sleeves protect from solar radiation while allowing evaporation — educate on the balance between UV protection and heat management.","id":"CHK-010-10"},{"section":"C","type":"supporting","text":"Buddy system active — checking in on work partner at regular intervals and aware of their condition.","notes":"Operating independently in high-heat conditions without buddy checks = coaching. Buddy system is critical because early signs of heat illness (confusion, poor coordination) may not be self-recognised. Buddy observes what the worker cannot.","id":"CHK-010-11"},{"section":"C","type":"supporting","text":"Is within acclimatisation period requirements — knows their acclimatisation status if returning from leave or new to Qatar summer operations.","notes":"If worker has been absent >2 weeks, they should know their acclimatisation day and the reduced workload required. Coaching on acclimatisation protocol and why it matters. Check with Supervisor if acclimatisation schedule is being followed.","id":"CHK-010-12"},{"section":"C","type":"supporting","text":"Urine colour self-monitoring — able to describe the urine colour chart and what action each colour zone triggers.","notes":"Urine colour chart: Pale yellow = hydrated (target); Dark yellow/amber = mild dehydration (increase intake); Brown/dark amber = severe dehydration (stop work, re-hydrate, report to medic). Coaching if worker is unaware of this monitoring method.","id":"CHK-010-13"}]}};
+
+const ACTIVITIES = [
+  {id:'CHK-001',name:'Manual Handling',order:1},
+  {id:'CHK-002',name:'Working at Heights',order:2},
+  {id:'CHK-003',name:'Hand & Finger Safety',order:3},
+  {id:'CHK-004',name:'Mechanical Lifting',order:4},
+  {id:'CHK-005',name:'Confined Space Entry',order:5},
+  {id:'CHK-006',name:'DROPS Prevention',order:6},
+  {id:'CHK-007',name:'Isolation & LOTO',order:7},
+  {id:'CHK-008',name:'H2S Emergency Response',order:8},
+  {id:'CHK-009',name:'PTW Application',order:9},
+  {id:'CHK-011',name:'Journey Management & Safe Driving',order:10},
+  {id:'CHK-010',name:'Heat Stress & Heat Illness Prevention',order:11},
+];
+
+const RIGS = ['Rig 67','Rig 68','Rig 117','Rig 118'];
+
+const ASSESSORS = [
+  {id:'a01',name:'Ali Raza Muhammad Amin',       shortName:'Ali Raza',      rig:'Rig 117',role:'HSE Advisor'},
+  {id:'a02',name:'Karunesh Kumar M.M. Panday',   shortName:'K. Panday',     rig:'Rig 117',role:'HSE Advisor'},
+  {id:'a03',name:'Hamza Feguiri',                shortName:'H. Feguiri',    rig:'Rig 117',role:'HSE Advisor'},
+  {id:'a04',name:'Midhun Michael Poulose',       shortName:'M. Poulose',    rig:'Rig 117',role:'HSE Advisor'},
+  {id:'a05',name:'Jigneshkumar N. Patel',        shortName:'J. Patel',      rig:'Rig 118',role:'HSE Advisor'},
+  {id:'a06',name:'Pankaj D.M. Nayee',            shortName:'P. Nayee',      rig:'Rig 118',role:'HSE Advisor'},
+  {id:'a07',name:'Meiyappan Muthuramalingam',    shortName:'Meiyappan M.',  rig:'Rig 118',role:'HSE Advisor'},
+  {id:'a08',name:'Vikash Shukla',                shortName:'V. Shukla',     rig:'Rig 118',role:'HSE Advisor'},
+  {id:'a09',name:'Jeremy Cosgrove',              shortName:'J. Cosgrove',   rig:'All',    role:'HSE Manager'},
+];
+
+// ════════════════════════════════════════════════════════════════════════════
+// DEMO DATA GENERATION
+// ════════════════════════════════════════════════════════════════════════════
+
+function seedRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 4294967296;
+  };
+}
+const rng = seedRandom(20260321);
+
+const ROLES = ['Roughneck','Derrickman','Motorman','Floorhand','Crane Operator','Driller','Mechanic','Electrician','Tool Pusher','Scaffolder'];
+const NAMES_FIRST = ['Ahmed','Mohammed','Ali','Hassan','Ibrahim','Ravi','Suresh','Rajesh','Kumar','Pradeep','Abdullah','Omar','Faisal','Tariq','Nader','Peter','James','John','David','Michael','Ramesh','Vijay','Arun','Sanjay','Nikhil'];
+const NAMES_LAST = ['Al-Rashid','Al-Qahtani','Khan','Sharma','Patel','Singh','Kumar','Mohammed','Hassan','Abdullah','Smith','Johnson','Brown','Williams','Ali','Raj','Nair','Reddy','Rao','Gupta'];
+
+function rn(arr) { return arr[Math.floor(rng() * arr.length)]; }
+function ri(lo,hi) { return lo + Math.floor(rng() * (hi - lo + 1)); }
+
+// Activity-specific failure rates (DR + CwC tendencies)
+const ACT_PROFILE = {
+  'CHK-001': {dr:0.05,cwc:0.15},
+  'CHK-002': {dr:0.10,cwc:0.20},
+  'CHK-003': {dr:0.08,cwc:0.18},
+  'CHK-004': {dr:0.12,cwc:0.22},
+  'CHK-005': {dr:0.15,cwc:0.20},
+  'CHK-006': {dr:0.18,cwc:0.22},
+  'CHK-007': {dr:0.10,cwc:0.15},
+  'CHK-008': {dr:0.20,cwc:0.20},
+  'CHK-009': {dr:0.08,cwc:0.12},
+  'CHK-011': {dr:0.12,cwc:0.18},
+  'CHK-010': {dr:0.25,cwc:0.25},
+};
+
+// Rig risk multipliers
+const RIG_MULT = {'Rig 67':1.0,'Rig 68':1.3,'Rig 117':0.9,'Rig 118':1.4};
+
+// Assessor profiles: leniency (>1=lenient, <1=strict) and consistency (0=consistent)
+const ASSESSOR_PROFILE = {
+  'a01':{leniency:1.0, bias:0.0},   // Calibrated
+  'a02':{leniency:1.6, bias:0.4},   // Rubber-stamping
+  'a03':{leniency:1.0, bias:0.1},   // Good
+  'a04':{leniency:0.8, bias:0.1},   // Slightly strict (thorough)
+  'a05':{leniency:1.1, bias:0.1},   // Slightly lenient
+  'a06':{leniency:1.5, bias:0.3},   // Rubber-stamping tendency
+  'a07':{leniency:0.85,bias:0.05},  // Thorough (strict)
+  'a08':{leniency:1.0, bias:0.2},   // New — inconsistent
+  'a09':{leniency:0.9, bias:0.05},  // HSE Mgr (calibrated)
+};
+
+function generatePersonnelList() {
+  const people = [];
+  const rigsPersonnel = {'Rig 67':12,'Rig 68':12,'Rig 117':12,'Rig 118':12};
+  let empNum = 1001;
+  for (const [rig, count] of Object.entries(rigsPersonnel)) {
+    for (let i = 0; i < count; i++) {
+      people.push({
+        id: `EMP-${empNum++}`,
+        name: `${rn(NAMES_FIRST)} ${rn(NAMES_LAST)}`,
+        rig, role: rn(ROLES)
+      });
+    }
+  }
+  return people;
+}
+
+function generateScores(actId, assessorId, outcome) {
+  const chk = CHECKLISTS[actId];
+  if (!chk) return {};
+  const scores = {};
+  const ap = ASSESSOR_PROFILE[assessorId] || {leniency:1.0,bias:0};
+  let forcedDR = false;
+  if (outcome === 'Development Required') forcedDR = true;
+
+  for (const item of chk.items) {
+    let s;
+    if (outcome === 'Verified Competent') {
+      s = (rng() < 0.05 * (1/ap.leniency)) ? 1 : 2;
+    } else if (outcome === 'Competent with Coaching') {
+      s = (rng() < 0.5) ? 1 : 2;
+      if (rng() < 0.05) s = 0;
+    } else {
+      // Development Required — ensure at least one 0
+      if (item.type === 'critical' && rng() < 0.5) s = 0;
+      else s = (rng() < 0.3) ? 0 : (rng() < 0.4 ? 1 : 2);
+    }
+    // Rubber-stamping: push scores toward 2
+    if (ap.leniency > 1.3 && s < 2 && rng() < (ap.leniency - 1.0)) s = 2;
+    scores[item.id] = s;
+  }
+
+  // Ensure DR has at least one critical = 0
+  if (outcome === 'Development Required') {
+    const critItems = chk.items.filter(i => i.type === 'critical');
+    if (critItems.length > 0) {
+      const target = critItems[Math.floor(rng() * critItems.length)];
+      scores[target.id] = 0;
+    }
+  }
+
+  // Ensure no CwC or VC has critical = 0
+  if (outcome !== 'Development Required') {
+    const critItems = chk.items.filter(i => i.type === 'critical');
+    for (const ci of critItems) {
+      if (scores[ci.id] === 0) scores[ci.id] = 1;
+    }
+  }
+
+  return scores;
+}
+
+function generateDemoData() {
+  const personnel = generatePersonnelList();
+  const assessments = [];
+  let idCounter = 1;
+
+  // Date range: last 6 months
+  const now = new Date('2026-03-21');
+
+  for (const person of personnel) {
+    const rig = person.rig;
+    const rigMult = RIG_MULT[rig] || 1.0;
+
+    // Each person assessed on 4-8 random activities
+    const numActs = ri(3, 6);
+    const shuffled = [...ACTIVITIES].sort(() => rng() - 0.5).slice(0, numActs);
+
+    // Assign an assessor from that rig or Jeremy
+    const rigAssessors = ASSESSORS.filter(a => a.rig === rig || a.rig === 'All');
+
+    for (const act of shuffled) {
+      const prof = ACT_PROFILE[act.id] || {dr:0.10,cwc:0.15};
+      const drRate = Math.min(0.45, prof.dr * rigMult);
+      const cwcRate = Math.min(0.40, prof.cwc);
+
+      const r = rng();
+      let outcome;
+      if (r < drRate) outcome = 'Development Required';
+      else if (r < drRate + cwcRate) outcome = 'Competent with Coaching';
+      else outcome = 'Verified Competent';
+
+      const assessor = rn(rigAssessors);
+      const daysAgo = ri(1, 180);
+      const d = new Date(now);
+      d.setDate(d.getDate() - daysAgo);
+      const dateStr = d.toISOString().split('T')[0];
+
+      const types = ['Initial','Routine (Annual)','Triggered (Gap Identified)'];
+      const assessType = rng() < 0.6 ? 'Initial' : rn(types);
+
+      let reassessDate = null;
+      if (outcome === 'Development Required') {
+        const rd = new Date(d);
+        rd.setDate(rd.getDate() + 14);
+        reassessDate = rd.toISOString().split('T')[0];
+      }
+
+      const scores = generateScores(act.id, assessor.id, outcome);
+
+      assessments.push({
+        id: `VOC-2026-${String(idCounter++).padStart(3,'0')}`,
+        date: dateStr,
+        assessorId: assessor.id,
+        assessorName: assessor.name,
+        assesseeId: person.id,
+        assesseeName: person.name,
+        role: person.role,
+        rig: person.rig,
+        activityId: act.id,
+        activityName: act.name,
+        assessmentType: assessType,
+        ftwConfirmed: true,
+        outcome,
+        scores,
+        notes: '',
+        reassessmentDue: reassessDate,
+        isDemo: true,
+      });
+    }
+  }
+
+  // Sort by date desc
+  assessments.sort((a,b) => b.date.localeCompare(a.date));
+  // Cap at 250 assessments max to keep memory lean
+  return assessments.slice(0, 250);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// APP STATE
+// ════════════════════════════════════════════════════════════════════════════
+let REGISTER = generateDemoData();
+let currentAssessment = null;
+let charts = {};
+
+function calcOutcome(actId, scores) {
+  const chk = CHECKLISTS[actId];
+  if (!chk) return 'Unknown';
+  let hasCritGap = false, hasCoach = false;
+  for (const item of chk.items) {
+    const s = scores[item.id];
+    if (s === undefined || s === null) continue;
+    if (s === 0) { hasCritGap = true; break; }
+    if (s === 1) hasCoach = true;
+  }
+  if (hasCritGap) return 'Development Required';
+  if (hasCoach) return 'Competent with Coaching';
+  return 'Verified Competent';
+}
+
+function outcomeBadge(o) {
+  if (o === 'Verified Competent') return `<span class="badge badge-vc">✓ Verified Competent</span>`;
+  if (o === 'Competent with Coaching') return `<span class="badge badge-cwc">~ Competent with Coaching</span>`;
+  if (o === 'Development Required') return `<span class="badge badge-dr">✗ Development Required</span>`;
+  return `<span class="badge badge-na">${o}</span>`;
+}
+
+function rigBadge(rig) {
+  const cls = {
+    'Rig 67':'rig-67','Rig 68':'rig-68','Rig 117':'rig-117','Rig 118':'rig-118'
+  }[rig] || '';
+  return `<span class="rig-badge ${cls}">${rig}</span>`;
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const [y,m,day] = d.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${day}-${months[parseInt(m)-1]}-${y}`;
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+  const renderers = {
+    dashboard: renderDashboard, register: renderRegister,
+    heatmap: renderHeatMap, individual: renderIndividual,
+    gaps: renderGaps, assessors: renderAssessorReport,
+    settings: renderSettings,
+    assess: () => {}
+  };
+  if (renderers[name]) renderers[name]();
+}
+document.querySelectorAll('.nav-btn').forEach(b => {
+  b.addEventListener('click', () => showPage(b.dataset.page));
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════════════════════════════
+function renderDashboard() {
+  const total = REGISTER.length;
+  const vc = REGISTER.filter(a=>a.outcome==='Verified Competent').length;
+  const cwc = REGISTER.filter(a=>a.outcome==='Competent with Coaching').length;
+  const dr = REGISTER.filter(a=>a.outcome==='Development Required').length;
+  const overdueCount = REGISTER.filter(a => a.reassessmentDue && a.reassessmentDue < todayStr() && a.outcome==='Development Required').length;
+
+  document.getElementById('kpi-row').innerHTML = `
+    <div class="kpi-card kpi-total"><div class="kpi-val">${total}</div><div class="kpi-label">Total Assessments</div><div class="kpi-sub">Last 6 months</div></div>
+    <div class="kpi-card kpi-vc"><div class="kpi-val">${Math.round(vc/total*100)}%</div><div class="kpi-label">Verified Competent</div><div class="kpi-sub">${vc} assessments</div></div>
+    <div class="kpi-card kpi-cwc"><div class="kpi-val">${Math.round(cwc/total*100)}%</div><div class="kpi-label">Competent with Coaching</div><div class="kpi-sub">${cwc} assessments</div></div>
+    <div class="kpi-card kpi-dr"><div class="kpi-val">${Math.round(dr/total*100)}%</div><div class="kpi-label">Development Required</div><div class="kpi-sub">${dr} assessments</div></div>
+    <div class="kpi-card" style="border-left:3px solid #c0392b"><div class="kpi-val" style="color:#c0392b">${overdueCount}</div><div class="kpi-label">Overdue Reassessments</div><div class="kpi-sub">Immediate action needed</div></div>
+  `;
+
+  // Chart: by activity (stacked)
+  const actLabels = ACTIVITIES.map(a => a.name.split(' ').slice(0,2).join(' '));
+  const actVC = [], actCWC = [], actDR = [];
+  for (const act of ACTIVITIES) {
+    const actData = REGISTER.filter(a => a.activityId === act.id);
+    actVC.push(actData.filter(a=>a.outcome==='Verified Competent').length);
+    actCWC.push(actData.filter(a=>a.outcome==='Competent with Coaching').length);
+    actDR.push(actData.filter(a=>a.outcome==='Development Required').length);
+  }
+  destroyChart('chart-by-activity');
+  charts['chart-by-activity'] = new Chart(document.getElementById('chart-by-activity'), {
+    type: 'bar',
+    data: {
+      labels: actLabels,
+      datasets: [
+        {label:'Verified Competent', data:actVC, backgroundColor:'rgba(39,174,96,0.8)'},
+        {label:'Competent with Coaching', data:actCWC, backgroundColor:'rgba(230,126,34,0.8)'},
+        {label:'Development Required', data:actDR, backgroundColor:'rgba(192,57,43,0.8)'},
+      ]
+    },
+    options: {
+      plugins: {legend:{position:'top',labels:{font:{size:11}}}},
+      scales: { x:{stacked:true,ticks:{font:{size:10}}}, y:{stacked:true,ticks:{font:{size:10}}} },
+      animation: false, responsive: true, maintainAspectRatio: false,
+    }
+  });
+
+  // Chart: by rig
+  const rigLabels = RIGS;
+  const rigVC = [], rigCWC = [], rigDR = [];
+  for (const rig of RIGS) {
+    const rd = REGISTER.filter(a => a.rig === rig);
+    rigVC.push(rd.filter(a=>a.outcome==='Verified Competent').length);
+    rigCWC.push(rd.filter(a=>a.outcome==='Competent with Coaching').length);
+    rigDR.push(rd.filter(a=>a.outcome==='Development Required').length);
+  }
+  destroyChart('chart-by-rig');
+  charts['chart-by-rig'] = new Chart(document.getElementById('chart-by-rig'), {
+    type: 'bar',
+    data: {
+      labels: rigLabels,
+      datasets: [
+        {label:'Verified Competent', data:rigVC, backgroundColor:'rgba(39,174,96,0.8)'},
+        {label:'Competent with Coaching', data:rigCWC, backgroundColor:'rgba(230,126,34,0.8)'},
+        {label:'Development Required', data:rigDR, backgroundColor:'rgba(192,57,43,0.8)'},
+      ]
+    },
+    options: {
+      plugins: {legend:{position:'top',labels:{font:{size:11}}}},
+      scales: { x:{stacked:true,ticks:{font:{size:11}}}, y:{stacked:true,ticks:{font:{size:10}}} },
+      animation: false, responsive: true, maintainAspectRatio: false,
+    }
+  });
+
+  // ── Trend: monthly pass rate (last 6 months) ──
+  {
+    const months = [], mVC = [], mCWC = [], mDR = [];
+    const now2 = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now2);
+      d.setMonth(d.getMonth() - i);
+      const key = d.toISOString().slice(0,7);
+      months.push(d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}));
+      const md = REGISTER.filter(a => a.date && a.date.startsWith(key));
+      const t = md.length || 1;
+      mVC.push(Math.round(md.filter(a=>a.outcome==='Verified Competent').length/t*100));
+      mCWC.push(Math.round(md.filter(a=>a.outcome==='Competent with Coaching').length/t*100));
+      mDR.push(Math.round(md.filter(a=>a.outcome==='Development Required').length/t*100));
+    }
+    destroyChart('chart-trend-monthly');
+    charts['chart-trend-monthly'] = new Chart(document.getElementById('chart-trend-monthly'), {
+      type:'line',
+      data:{labels:months, datasets:[
+        {label:'VC %',  data:mVC,  borderColor:'#27ae60', backgroundColor:'rgba(39,174,96,0.08)',  tension:0.3, fill:true, pointRadius:4},
+        {label:'CwC %', data:mCWC, borderColor:'#e67e22', backgroundColor:'rgba(230,126,34,0.06)', tension:0.3, fill:true, pointRadius:4},
+        {label:'DR %',  data:mDR,  borderColor:'#c0392b', backgroundColor:'rgba(192,57,43,0.05)',  tension:0.3, fill:true, pointRadius:4},
+      ]},
+      options:{
+        animation:false, responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{font:{size:11}}}},
+        scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}}},x:{ticks:{font:{size:10}}}}
+      }
+    });
+  }
+  // ── Trend: per-activity last 30d vs prior 30d ──
+  {
+    const today2 = new Date();
+    const c30 = new Date(today2); c30.setDate(c30.getDate()-30);
+    const c60 = new Date(today2); c60.setDate(c60.getDate()-60);
+    const c30s = c30.toISOString().split('T')[0];
+    const c60s = c60.toISOString().split('T')[0];
+    const rows = ACTIVITIES.map(act => {
+      const rec = REGISTER.filter(a=>a.activityId===act.id && a.date>=c30s);
+      const pri = REGISTER.filter(a=>a.activityId===act.id && a.date>=c60s && a.date<c30s);
+      const rVC = rec.length ? Math.round(rec.filter(a=>a.outcome==='Verified Competent').length/rec.length*100) : null;
+      const pVC = pri.length ? Math.round(pri.filter(a=>a.outcome==='Verified Competent').length/pri.length*100) : null;
+      let arrow = '<span class="trend-flat">—</span>';
+      if (rVC!==null && pVC!==null) {
+        const d = rVC - pVC;
+        if (d >= 5)  arrow = `<span class="trend-up">↑ +${d}%</span>`;
+        else if (d <= -5) arrow = `<span class="trend-down">↓ ${d}%</span>`;
+        else arrow = `<span class="trend-flat">→ ${d>=0?'+':''}${d}%</span>`;
+      }
+      return `<tr>
+        <td style="font-size:11px;padding:4px 8px;white-space:nowrap">${act.id}</td>
+        <td style="font-size:11px;padding:4px 8px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${act.name.split(' ').slice(0,4).join(' ')}</td>
+        <td style="padding:4px 8px;text-align:center;font-size:12px">${rVC!==null?rVC+'%':'—'}</td>
+        <td style="padding:4px 8px;text-align:center">${arrow}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('activity-trends-table').innerHTML =
+      `<table class="data-table" style="font-size:12px">
+        <thead><tr><th>CHK</th><th>Activity</th><th>VC% 30d</th><th>vs Prior</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // Recent table
+  const recent = REGISTER.slice(0,10);
+  document.getElementById('recent-tbody').innerHTML = recent.map(a => `
+    <tr>
+      <td>${formatDate(a.date)}</td>
+      <td><strong>${a.assesseeName}</strong><br><span class="small">${a.assesseeId}</span></td>
+      <td style="font-size:12px">${a.activityName}</td>
+      <td>${rigBadge(a.rig)}</td>
+      <td>${outcomeBadge(a.outcome)}</td>
+    </tr>`).join('');
+
+  // DR list
+  const drItems = REGISTER.filter(a=>a.outcome==='Development Required').slice(0,8);
+  document.getElementById('dr-list').innerHTML = drItems.length === 0 ? '<p class="small" style="padding:8px">No outstanding Development Required items.</p>' :
+    drItems.map(a => {
+      const overdue = a.reassessmentDue && a.reassessmentDue < todayStr();
+      return `<div class="gap-row">
+        <div class="gap-severity" style="background:${overdue?'#c0392b':'#e67e22'}"></div>
+        <div style="flex:1">
+          <strong style="font-size:13px">${a.assesseeName}</strong>
+          <span class="small"> | ${rigBadge(a.rig)}</span><br>
+          <span style="font-size:12px;color:#555">${a.activityName}</span>
+          ${overdue ? '<span class="small flag-bad"> ⚠ OVERDUE</span>' : `<span class="small"> | Due: ${formatDate(a.reassessmentDue)}</span>`}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// REGISTER
+// ════════════════════════════════════════════════════════════════════════════
+function populateRegisterFilters() {
+  const rigSel = document.getElementById('reg-filter-rig');
+  rigSel.innerHTML = '<option value="">All Rigs</option>' + RIGS.map(r=>`<option>${r}</option>`).join('');
+  const actSel = document.getElementById('reg-filter-activity');
+  actSel.innerHTML = '<option value="">All Activities</option>' + ACTIVITIES.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  const assSel = document.getElementById('reg-filter-assessor');
+  assSel.innerHTML = '<option value="">All Assessors</option>' + ASSESSORS.map(a=>`<option value="${a.id}">${a.shortName}</option>`).join('');
+  rigSel.onchange = actSel.onchange = assSel.onchange = renderRegister;
+  document.getElementById('reg-filter-name').oninput = renderRegister;
+  document.getElementById('reg-filter-outcome').onchange = renderRegister;
+}
+
+function renderRegister() {
+  const rig = document.getElementById('reg-filter-rig').value;
+  const act = document.getElementById('reg-filter-activity').value;
+  const outcome = document.getElementById('reg-filter-outcome').value;
+  const ass = document.getElementById('reg-filter-assessor').value;
+  const name = document.getElementById('reg-filter-name').value.toLowerCase();
+
+  let data = REGISTER.filter(a => {
+    if (rig && a.rig !== rig) return false;
+    if (act && a.activityId !== act) return false;
+    if (outcome && a.outcome !== outcome) return false;
+    if (ass && a.assessorId !== ass) return false;
+    if (name && !a.assesseeName.toLowerCase().includes(name) && !a.assesseeId.toLowerCase().includes(name)) return false;
+    return true;
+  });
+
+  document.getElementById('reg-count').textContent = `${data.length} records`;
+  document.getElementById('register-tbody').innerHTML = data.slice(0,200).map(a => {
+    const overdue = a.reassessmentDue && a.reassessmentDue < todayStr() && a.outcome==='Development Required';
+    return `<tr>
+      <td style="font-size:11px;color:#888">${a.id}</td>
+      <td style="white-space:nowrap">${formatDate(a.date)}</td>
+      <td><strong>${a.assesseeName}</strong><br><span class="small">${a.assesseeId || '—'}</span></td>
+      <td style="font-size:12px">${a.role||'—'}</td>
+      <td>${rigBadge(a.rig)}</td>
+      <td style="font-size:12px">${a.activityName}</td>
+      <td style="font-size:11px">${a.assessmentType||'—'}</td>
+      <td style="font-size:12px">${ASSESSORS.find(x=>x.id===a.assessorId)?.shortName||a.assessorName||'—'}</td>
+      <td>${outcomeBadge(a.outcome)}</td>
+      <td style="font-size:11px${overdue?' color:#c0392b;font-weight:bold':''}">${formatDate(a.reassessmentDue)}${overdue?' ⚠':''}</td>
+    </tr>`;
+  }).join('');
+}
+
+function clearRegFilters() {
+  ['reg-filter-rig','reg-filter-activity','reg-filter-outcome','reg-filter-assessor'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('reg-filter-name').value='';
+  renderRegister();
+}
+
+function exportCSV() {
+  const headers = ['ID','Date','Assessee','Employee ID','Role','Rig','Activity','Assessment Type','Assessor','Outcome','Reassessment Due'];
+  const rows = REGISTER.map(a => [
+    a.id, a.date, a.assesseeName, a.assesseeId||'', a.role||'', a.rig,
+    a.activityName, a.assessmentType||'', a.assessorName||ASSESSORS.find(x=>x.id===a.assessorId)?.name||'',
+    a.outcome, a.reassessmentDue||''
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='VOC-Register-'+todayStr()+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// FLEET HEAT MAP
+// ════════════════════════════════════════════════════════════════════════════
+function renderHeatMap() {
+  const actLabels = ACTIVITIES.map(a => a.name.split(' ').slice(0,3).join(' '));
+  const datasets = [];
+  const colors = {
+    'Rig 67': {vc:'rgba(39,174,96,0.85)',cwc:'rgba(230,126,34,0.85)',dr:'rgba(192,57,43,0.85)'},
+    'Rig 68': {vc:'rgba(39,174,96,0.7)',cwc:'rgba(230,126,34,0.7)',dr:'rgba(192,57,43,0.7)'},
+    'Rig 117':{vc:'rgba(39,174,96,0.55)',cwc:'rgba(230,126,34,0.55)',dr:'rgba(192,57,43,0.55)'},
+    'Rig 118':{vc:'rgba(39,174,96,0.4)',cwc:'rgba(230,126,34,0.4)',dr:'rgba(192,57,43,0.4)'},
+  };
+
+  // Build grouped stacked data per rig per activity
+  // Each activity group will have 4 rig bars, each stacked with VC/CwC/DR
+  // Use grouped stacked approach: separate dataset per rig-outcome combo
+  const view = document.getElementById('hm-view').value;
+
+  if (view === 'vc-pct') {
+    // Simple bar: one dataset per rig, value = % VC
+    for (const rig of RIGS) {
+      const vcData = ACTIVITIES.map(act => {
+        const d = REGISTER.filter(a => a.rig === rig && a.activityId === act.id);
+        return d.length ? Math.round(d.filter(a=>a.outcome==='Verified Competent').length / d.length * 100) : 0;
+      });
+      const c = colors[rig];
+      datasets.push({label:rig, data:vcData, backgroundColor:c.vc, borderWidth:1});
+    }
+    destroyChart('chart-heatmap');
+    charts['chart-heatmap'] = new Chart(document.getElementById('chart-heatmap'), {
+      type:'bar',
+      data:{labels:actLabels, datasets},
+      options:{
+        plugins:{legend:{position:'top'},tooltip:{callbacks:{label:(ctx)=>`${ctx.dataset.label}: ${ctx.raw}% VC`}}},
+        scales:{x:{ticks:{font:{size:10}}}, y:{min:0,max:100,ticks:{callback:v=>v+'%'}}},
+        animation: false, responsive:true, maintainAspectRatio:false
+      }
+    });
+  } else {
+    // Stacked %: each rig stacked to 100%, showing VC/CwC/DR split
+    const rigColors = {
+      'Rig 67':  {vc:'#27ae60',cwc:'#e67e22',dr:'#c0392b'},
+      'Rig 68':  {vc:'#52be80',cwc:'#e59866',dr:'#cd6155'},
+      'Rig 117': {vc:'#82e0aa',cwc:'#f0b27a',dr:'#d98880'},
+      'Rig 118': {vc:'#a9dfbf',cwc:'#f8c471',dr:'#e8a89c'},
+    };
+    const dsVC  = RIGS.map(rig => ({label:rig+' VC%',  data:ACTIVITIES.map(act=>{const d=REGISTER.filter(a=>a.rig===rig&&a.activityId===act.id);return d.length?Math.round(d.filter(a=>a.outcome==='Verified Competent').length/d.length*100):0;}), backgroundColor:rigColors[rig].vc,  stack:rig}));
+    const dsCWC = RIGS.map(rig => ({label:rig+' CwC%', data:ACTIVITIES.map(act=>{const d=REGISTER.filter(a=>a.rig===rig&&a.activityId===act.id);return d.length?Math.round(d.filter(a=>a.outcome==='Competent with Coaching').length/d.length*100):0;}),   backgroundColor:rigColors[rig].cwc, stack:rig}));
+    const dsDR  = RIGS.map(rig => ({label:rig+' DR%',  data:ACTIVITIES.map(act=>{const d=REGISTER.filter(a=>a.rig===rig&&a.activityId===act.id);return d.length?Math.round(d.filter(a=>a.outcome==='Development Required').length/d.length*100):0;}),  backgroundColor:rigColors[rig].dr,  stack:rig}));
+    const allDs = [...dsVC,...dsCWC,...dsDR];
+    destroyChart('chart-heatmap');
+    charts['chart-heatmap'] = new Chart(document.getElementById('chart-heatmap'), {
+      type:'bar',
+      data:{labels:actLabels, datasets:allDs},
+      options:{
+        animation:false, responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{
+            title:ctx=>ACTIVITIES[ctx[0].dataIndex]?.name||ctx[0].label,
+            label:ctx=>`${ctx.dataset.label}: ${ctx.raw}%`
+          }}
+        },
+        scales:{
+          x:{stacked:true,ticks:{font:{size:9},maxRotation:35}},
+          y:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}}}
+        }
+      }
+    });
+  }
+
+  // Rig summary table
+  const rigRows = RIGS.map(rig => {
+    const d = REGISTER.filter(a => a.rig === rig);
+    if (!d.length) return `<tr><td>${rigBadge(rig)}</td><td>0</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>`;
+    const total = d.length;
+    const vc = d.filter(a=>a.outcome==='Verified Competent').length;
+    const cwc = d.filter(a=>a.outcome==='Competent with Coaching').length;
+    const dr = d.filter(a=>a.outcome==='Development Required').length;
+    const overdue = d.filter(a=>a.reassessmentDue && a.reassessmentDue < todayStr() && a.outcome==='Development Required').length;
+    return `<tr>
+      <td>${rigBadge(rig)}</td>
+      <td>${total}</td>
+      <td><span class="flag-good">${Math.round(vc/total*100)}%</span></td>
+      <td>${Math.round(cwc/total*100)}%</td>
+      <td><span class="${dr/total>0.2?'flag-bad':dr/total>0.1?'flag-warn':''}">${Math.round(dr/total*100)}%</span></td>
+      <td>${overdue > 0 ? `<span class="flag-bad">${overdue} overdue</span>` : '<span class="flag-good">None</span>'}</td>
+    </tr>`;
+  });
+  document.getElementById('rig-summary-tbody').innerHTML = rigRows.join('');
+
+  // Activity risk ranking
+  const actRisk = ACTIVITIES.map(act => {
+    const d = REGISTER.filter(a => a.activityId === act.id);
+    const total = d.length;
+    if (!total) return {act, drPct:0, cwcPct:0, total:0};
+    return {
+      act,
+      drPct: d.filter(a=>a.outcome==='Development Required').length/total,
+      cwcPct: d.filter(a=>a.outcome==='Competent with Coaching').length/total,
+      total
+    };
+  }).sort((a,b) => b.drPct - a.drPct);
+
+  document.getElementById('activity-risk-tbody').innerHTML = actRisk.map((item,i) => {
+    const drPct = Math.round(item.drPct*100);
+    const cwcPct = Math.round(item.cwcPct*100);
+    return `<tr>
+      <td>${i+1}</td>
+      <td style="font-size:12px">${item.act.name}</td>
+      <td><span class="${drPct>20?'flag-bad':drPct>10?'flag-warn':'flag-good'}">${drPct}%</span></td>
+      <td>${cwcPct}%</td>
+      <td class="small">${item.total}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// INDIVIDUAL PROFILE
+// ════════════════════════════════════════════════════════════════════════════
+function renderIndividual() {
+  const rigSel = document.getElementById('ind-rig-filter');
+  rigSel.innerHTML = '<option value="">All Rigs</option>' + RIGS.map(r=>`<option>${r}</option>`).join('');
+  document.getElementById('ind-profile').style.display = 'none';
+  document.getElementById('ind-search-results-list').innerHTML = '';
+}
+
+function searchIndividual() {
+  const query = document.getElementById('ind-search').value.toLowerCase().trim();
+  const rig = document.getElementById('ind-rig-filter').value;
+  if (query.length < 2) {
+    document.getElementById('ind-search-results-list').innerHTML = '';
+    document.getElementById('ind-profile').style.display = 'none';
+    return;
+  }
+
+  // Get unique assessees
+  const seen = new Set();
+  const results = [];
+  for (const a of REGISTER) {
+    const key = a.assesseeId || a.assesseeName;
+    if (seen.has(key)) continue;
+    if (rig && a.rig !== rig) continue;
+    if (a.assesseeName.toLowerCase().includes(query) || (a.assesseeId||'').toLowerCase().includes(query)) {
+      seen.add(key);
+      results.push({name:a.assesseeName, id:a.assesseeId||'—', rig:a.rig, role:a.role||'—'});
+    }
+  }
+
+  if (results.length === 1) {
+    showIndividualProfile(results[0].name, results[0].id);
+    document.getElementById('ind-search-results-list').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('ind-profile').style.display = 'none';
+  document.getElementById('ind-search-results-list').innerHTML = `
+    <div class="card mt16">
+      <h3>${results.length} matches found</h3>
+      ${results.slice(0,20).map(p => `
+        <div class="gap-row" style="cursor:pointer" onclick="showIndividualProfile('${p.name.replace(/'/g,"\'")}','${p.id}')">
+          <div>
+            <strong>${p.name}</strong> <span class="small">${p.id}</span>
+            ${rigBadge(p.rig)} <span class="small">${p.role}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function showIndividualProfile(name, empId) {
+  document.getElementById('ind-search-results-list').innerHTML = '';
+  const personRecs = REGISTER.filter(a => a.assesseeName === name || a.assesseeId === empId);
+  if (!personRecs.length) return;
+  const first = personRecs[0];
+  document.getElementById('ind-profile').style.display = 'block';
+
+  // Profile card
+  document.getElementById('ind-profile-card').innerHTML = `
+    <h3>Personnel Profile</h3>
+    <div class="assessor-stat"><span>Name</span><span><strong>${name}</strong></span></div>
+    <div class="assessor-stat"><span>Employee ID</span><span>${empId}</span></div>
+    <div class="assessor-stat"><span>Rig</span><span>${rigBadge(first.rig)}</span></div>
+    <div class="assessor-stat"><span>Role</span><span>${first.role||'—'}</span></div>
+    <div class="assessor-stat"><span>Total Assessments</span><span><strong>${personRecs.length}</strong></span></div>
+    <div class="assessor-stat"><span>Activities Assessed</span><span>${new Set(personRecs.map(a=>a.activityId)).size} / 11</span></div>
+    <div class="assessor-stat"><span>Verified Competent</span><span class="flag-good"><strong>${personRecs.filter(a=>a.outcome==='Verified Competent').length}</strong></span></div>
+    <div class="assessor-stat"><span>Competent w/ Coaching</span><span class="flag-warn">${personRecs.filter(a=>a.outcome==='Competent with Coaching').length}</span></div>
+    <div class="assessor-stat"><span>Development Required</span><span class="${personRecs.filter(a=>a.outcome==='Development Required').length>0?'flag-bad':''}">${personRecs.filter(a=>a.outcome==='Development Required').length}</span></div>
+  `;
+
+  // Activity status (latest outcome per activity)
+  const latestPerAct = {};
+  for (const a of personRecs.sort((x,y)=>y.date.localeCompare(x.date))) {
+    if (!latestPerAct[a.activityId]) latestPerAct[a.activityId] = a;
+  }
+
+  const actList = ACTIVITIES.map(act => {
+    const latest = latestPerAct[act.id];
+    if (!latest) return `<div class="assessor-stat"><span style="font-size:12px">${act.name}</span><span><span class="badge badge-na">Not Assessed</span></span></div>`;
+    const overdue = latest.outcome==='Development Required' && latest.reassessmentDue && latest.reassessmentDue < todayStr();
+    return `<div class="assessor-stat">
+      <span style="font-size:12px">${act.name}</span>
+      <span>${outcomeBadge(latest.outcome)}${overdue?'<span class="small flag-bad"> ⚠ Overdue</span>':''}</span>
+    </div>`;
+  });
+  document.getElementById('ind-activity-list').innerHTML = actList.join('');
+
+  // History table
+  document.getElementById('ind-history-tbody').innerHTML = personRecs.sort((a,b)=>b.date.localeCompare(a.date)).map(a => `
+    <tr>
+      <td>${formatDate(a.date)}</td>
+      <td style="font-size:12px">${a.activityName}</td>
+      <td style="font-size:12px">${ASSESSORS.find(x=>x.id===a.assessorId)?.shortName||a.assessorName||'—'}</td>
+      <td>${outcomeBadge(a.outcome)}</td>
+      <td style="font-size:11px">${a.assessmentType||'—'}</td>
+    </tr>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// GAP ANALYSIS
+// ════════════════════════════════════════════════════════════════════════════
+function renderGaps() {
+  const dr = REGISTER.filter(a => a.outcome === 'Development Required');
+  const overdue = dr.filter(a => a.reassessmentDue && a.reassessmentDue < todayStr());
+  const uniqueDR = [...new Map(dr.map(a=>[a.assesseeName+a.activityId, a])).values()];
+  const needsAction = uniqueDR.filter(a => a.reassessmentDue && a.reassessmentDue > todayStr());
+
+  document.getElementById('gap-kpi-row').innerHTML = `
+    <div class="kpi-card kpi-dr"><div class="kpi-val">${dr.length}</div><div class="kpi-label">Total DR Outcomes</div></div>
+    <div class="kpi-card" style="border-left:3px solid #c0392b"><div class="kpi-val" style="color:#c0392b">${overdue.length}</div><div class="kpi-label">Overdue Reassessments</div></div>
+    <div class="kpi-card kpi-cwc"><div class="kpi-val">${needsAction.length}</div><div class="kpi-label">Reassessments Due</div><div class="kpi-sub">Within 14 days</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:var(--bhdc-blue)">${new Set(dr.map(a=>a.assesseeName)).size}</div><div class="kpi-label">Individuals Affected</div></div>
+  `;
+
+  document.getElementById('gap-dr-list').innerHTML = uniqueDR.slice(0,10).map(a => {
+    const overdue = a.reassessmentDue && a.reassessmentDue < todayStr();
+    return `<div class="gap-row">
+      <div class="gap-severity" style="background:${overdue?'#c0392b':'#e67e22'}"></div>
+      <div style="flex:1">
+        <strong>${a.assesseeName}</strong> ${rigBadge(a.rig)}<br>
+        <span style="font-size:12px;color:#555">${a.activityName}</span><br>
+        <span class="small">Assessed: ${formatDate(a.date)} | Assessor: ${ASSESSORS.find(x=>x.id===a.assessorId)?.shortName||'—'}</span>
+      </div>
+      <div style="text-align:right;font-size:12px">
+        ${overdue ? '<span class="flag-bad">OVERDUE</span>' : `<span class="small">Due: ${formatDate(a.reassessmentDue)}</span>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('gap-overdue-list').innerHTML = overdue.length === 0 ?
+    '<p class="small" style="padding:12px;color:var(--vc)">✓ No overdue reassessments.</p>' :
+    overdue.slice(0,10).map(a => `<div class="gap-row">
+      <div class="gap-severity" style="background:#c0392b"></div>
+      <div style="flex:1">
+        <strong>${a.assesseeName}</strong> ${rigBadge(a.rig)}<br>
+        <span style="font-size:12px">${a.activityName}</span><br>
+        <span class="small flag-bad">Due: ${formatDate(a.reassessmentDue)} — OVERDUE by ${Math.abs(Math.floor((new Date(a.reassessmentDue)-new Date(todayStr()))/(1000*86400)))} days</span>
+      </div>
+    </div>`).join('');
+
+  // Activity risk
+  const actRisk = ACTIVITIES.map(act => {
+    const d = REGISTER.filter(a => a.activityId === act.id);
+    const drCount = d.filter(a=>a.outcome==='Development Required').length;
+    return {name:act.name, drPct: d.length ? drCount/d.length : 0, count: drCount, total: d.length};
+  }).sort((a,b) => b.drPct - a.drPct);
+
+  document.getElementById('gap-activity-risk').innerHTML = actRisk.map((item,i) => {
+    const pct = Math.round(item.drPct*100);
+    const w = Math.round(pct * 2);
+    return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span>${i+1}. ${item.name}</span>
+        <span class="${pct>20?'flag-bad':pct>10?'flag-warn':'flag-good'}">${pct}% DR (${item.count})</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${w}%;background:${pct>20?'var(--dr)':pct>10?'var(--cwc)':'var(--vc)'}"></div></div>
+    </div>`;
+  }).join('');
+
+  // Rig risk
+  const rigRisk = RIGS.map(rig => {
+    const d = REGISTER.filter(a => a.rig === rig);
+    const drCount = d.filter(a=>a.outcome==='Development Required').length;
+    const overdueCount = d.filter(a=>a.reassessmentDue && a.reassessmentDue < todayStr() && a.outcome==='Development Required').length;
+    return {rig, drPct: d.length ? drCount/d.length : 0, drCount, overdueCount, total: d.length};
+  }).sort((a,b) => b.drPct - a.drPct);
+
+  document.getElementById('gap-rig-risk').innerHTML = rigRisk.map(item => {
+    const pct = Math.round(item.drPct*100);
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+        <span>${rigBadge(item.rig)}</span>
+        <span class="${pct>20?'flag-bad':pct>10?'flag-warn':'flag-good'}">${pct}% DR</span>
+      </div>
+      <div style="font-size:11px;color:#666">${item.drCount} DR outcomes | ${item.overdueCount > 0 ? `<span class="flag-bad">${item.overdueCount} overdue</span>` : 'No overdue'}</div>
+      <div class="progress-bar-wrap mt16" style="margin-top:4px"><div class="progress-bar-fill" style="width:${Math.min(100,pct*2)}%;background:${pct>20?'var(--dr)':pct>10?'var(--cwc)':'var(--vc)'}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ASSESSOR REPORT
+// ════════════════════════════════════════════════════════════════════════════
+function renderAssessorReport() {
+  const totalAssess = REGISTER.length;
+  const allScores = REGISTER.flatMap(a => Object.values(a.scores));
+  const score0 = allScores.filter(s=>s===0).length;
+  const score1 = allScores.filter(s=>s===1).length;
+  const score2 = allScores.filter(s=>s===2).length;
+  const fleetMean = allScores.reduce((a,b)=>a+b,0) / allScores.length;
+  const fleetDRRate = REGISTER.filter(a=>a.outcome==='Development Required').length / totalAssess;
+  const fleetVCRate = REGISTER.filter(a=>a.outcome==='Verified Competent').length / totalAssess;
+
+  // Fleet score distribution chart
+  destroyChart('chart-score-dist');
+  charts['chart-score-dist'] = new Chart(document.getElementById('chart-score-dist'), {
+    type: 'bar',
+    data: {
+      labels: ASSESSORS.map(a=>a.shortName),
+      datasets: [
+        {
+          label:'Score 0 (Critical Gap)',
+          data: ASSESSORS.map(a => {
+            const sc = REGISTER.filter(x=>x.assessorId===a.id).flatMap(x=>Object.values(x.scores));
+            return sc.length ? Math.round(sc.filter(s=>s===0).length/sc.length*100) : 0;
+          }),
+          backgroundColor:'rgba(192,57,43,0.8)'
+        },
+        {
+          label:'Score 1 (Coaching)',
+          data: ASSESSORS.map(a => {
+            const sc = REGISTER.filter(x=>x.assessorId===a.id).flatMap(x=>Object.values(x.scores));
+            return sc.length ? Math.round(sc.filter(s=>s===1).length/sc.length*100) : 0;
+          }),
+          backgroundColor:'rgba(230,126,34,0.8)'
+        },
+        {
+          label:'Score 2 (Competent)',
+          data: ASSESSORS.map(a => {
+            const sc = REGISTER.filter(x=>x.assessorId===a.id).flatMap(x=>Object.values(x.scores));
+            return sc.length ? Math.round(sc.filter(s=>s===2).length/sc.length*100) : 0;
+          }),
+          backgroundColor:'rgba(39,174,96,0.8)'
+        }
+      ]
+    },
+    options:{
+      plugins:{
+        legend:{position:'top'},
+        title:{display:true,text:`Fleet mean score: ${fleetMean.toFixed(2)} | Fleet DR rate: ${Math.round(fleetDRRate*100)}%`,font:{size:12}}
+      },
+      scales:{
+        x:{stacked:true,ticks:{font:{size:11}}},
+        y:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}}}
+      },
+      animation: false, responsive:true, maintainAspectRatio:false
+    }
+  });
+
+  // Per-assessor cards
+  const cards = ASSESSORS.map(a => {
+    const recs = REGISTER.filter(r => r.assessorId === a.id);
+    if (recs.length === 0) return `
+      <div class="assessor-card">
+        <h4>${a.name} <span class="small">${a.rig}</span></h4>
+        <div class="assessor-stat"><span>Assessments conducted</span><span class="small">0 — No data yet</span></div>
+      </div>`;
+
+    const scores = recs.flatMap(r => Object.values(r.scores));
+    const meanScore = scores.reduce((x,y)=>x+y,0) / scores.length;
+    const pct2 = Math.round(scores.filter(s=>s===2).length/scores.length*100);
+    const pct1 = Math.round(scores.filter(s=>s===1).length/scores.length*100);
+    const pct0 = Math.round(scores.filter(s=>s===0).length/scores.length*100);
+    const drRate = recs.filter(r=>r.outcome==='Development Required').length/recs.length;
+    const vcRate = recs.filter(r=>r.outcome==='Verified Competent').length/recs.length;
+
+    // Calibration index: deviation from fleet mean
+    const calIndex = Math.abs(meanScore - fleetMean);
+
+    // Flags
+    const rubberStamp = pct2 > 85;
+    const noGaps = pct0 < 1 && recs.length > 10;
+    const lowDR = drRate < 0.02 && recs.length > 10;
+    const highInconsistency = calIndex > 0.25;
+
+    let flags = [];
+    if (rubberStamp) flags.push('<span class="flag-warn">⚠ High proportion of 2s — verify rigour</span>');
+    if (noGaps && lowDR) flags.push('<span class="flag-warn">⚠ Very few 0s detected — potential rubber-stamping</span>');
+    if (highInconsistency) flags.push('<span class="flag-bad">⚠ Calibration deviation — review vs fleet</span>');
+    if (!rubberStamp && !noGaps && drRate > fleetDRRate * 0.5) flags.push('<span class="flag-good">✓ Calibrated</span>');
+
+    const rigTag = a.rig === 'All' ? '<span class="tag">All Rigs</span>' : rigBadge(a.rig);
+
+    return `
+      <div class="assessor-card">
+        <h4>${a.name} ${rigTag} <span class="small">${a.role}</span></h4>
+        <div class="assessor-stat"><span>Assessments conducted</span><span><strong>${recs.length}</strong></span></div>
+        <div class="assessor-stat"><span>VC rate</span><span class="flag-good"><strong>${Math.round(vcRate*100)}%</strong></span><span class="small"> (fleet: ${Math.round(fleetVCRate*100)}%)</span></div>
+        <div class="assessor-stat"><span>DR rate</span><span class="${drRate>fleetDRRate*1.5?'flag-warn':drRate<fleetDRRate*0.3&&recs.length>5?'flag-bad':''}"><strong>${Math.round(drRate*100)}%</strong></span><span class="small"> (fleet: ${Math.round(fleetDRRate*100)}%)</span></div>
+        <div class="assessor-stat"><span>Mean score</span><span>${meanScore.toFixed(2)}</span><span class="small"> (fleet: ${fleetMean.toFixed(2)})</span></div>
+        <div class="assessor-stat"><span>Score dist. (0/1/2)</span><span>${pct0}% / ${pct1}% / <strong>${pct2}%</strong></span></div>
+        <div class="assessor-stat"><span>Calibration index</span><span class="${calIndex>0.25?'flag-bad':calIndex>0.15?'flag-warn':'flag-good'}">${calIndex.toFixed(2)}</span></div>
+        ${flags.length ? `<div style="margin-top:10px;font-size:11px;line-height:1.8">${flags.join('<br>')}</div>` : ''}
+      </div>`;
+  });
+
+  document.getElementById('assessor-grid-container').innerHTML = cards.join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// NEW ASSESSMENT
+// ════════════════════════════════════════════════════════════════════════════
+function initAssessSetup() {
+  const assEl = document.getElementById('setup-assessor');
+  assEl.innerHTML = '<option value="">Select assessor...</option>' +
+    ASSESSORS.map(a => `<option value="${a.id}">${a.name} (${a.rig})</option>`).join('');
+
+  const rigEl = document.getElementById('setup-rig');
+  rigEl.innerHTML = RIGS.map(r => `<option>${r}</option>`).join('');
+
+  const actEl = document.getElementById('setup-activity');
+  actEl.innerHTML = ACTIVITIES.map(a => `<option value="${a.id}">${a.id} — ${a.name}</option>`).join('');
+
+  document.getElementById('setup-date').value = todayStr();
+}
+
+function startAssessment() {
+  const assessorId = document.getElementById('setup-assessor').value;
+  const date = document.getElementById('setup-date').value;
+  const name = document.getElementById('setup-assessee-name').value.trim();
+  const rig = document.getElementById('setup-rig').value;
+  const actId = document.getElementById('setup-activity').value;
+  const ftw = document.getElementById('setup-ftw').value;
+
+  if (!assessorId || !name || !actId) { alert('Please complete all required fields.'); return; }
+  if (ftw === 'no') { alert('Assessment cannot proceed — FTW clearance not confirmed.'); return; }
+
+  currentAssessment = {
+    id: `VOC-${date.replace(/-/g,'').slice(2)}-${String(REGISTER.length+1).padStart(3,'0')}`,
+    date, assessorId,
+    assesseeName: name,
+    assesseeId: document.getElementById('setup-emp-id').value.trim(),
+    rig, role: document.getElementById('setup-role').value.trim(),
+    activityId: actId,
+    activityName: ACTIVITIES.find(a=>a.id===actId)?.name||actId,
+    assessmentType: document.getElementById('setup-type').value,
+    ftwConfirmed: true,
+    scores: {}, outcome: null, notes: '', reassessmentDue: null
+  };
+
+  renderScoringSection();
+  showAssessStep('score');
+}
+
+function renderScoringSection() {
+  const chk = CHECKLISTS[currentAssessment.activityId];
+  if (!chk) return;
+
+  document.getElementById('preview-info').textContent =
+    `${currentAssessment.activityName} | ${currentAssessment.assesseeName} | ${currentAssessment.rig}`;
+
+  const sections = {A:[], B:[], C:[]};
+  for (const item of chk.items) sections[item.section].push(item);
+
+  const SECTION_LABELS = {
+    A: 'SECTION A — KNOWLEDGE RETENTION (VERBAL ASSESSMENT)',
+    B: 'SECTION B — CRITICAL PHYSICAL BEHAVIOURS ★ (Any score of 0 = DEVELOPMENT REQUIRED)',
+    C: 'SECTION C — SUPPORTING BEHAVIOURS & SCENARIOS'
+  };
+
+  let html = '';
+  for (const [sec, items] of Object.entries(sections)) {
+    if (!items.length) continue;
+    html += `<div class="section-header">${SECTION_LABELS[sec]}</div>
+    <div class="section-body">`;
+    for (const item of items) {
+      const rowClass = `${item.type}-row`;
+      const typeBadge = {
+        critical: '<span class="item-type-badge badge-critical">★ Critical Behaviour</span>',
+        verbal: '<span class="item-type-badge badge-verbal">Verbal</span>',
+        supporting: '<span class="item-type-badge badge-supporting">Supporting</span>',
+        scenario: '<span class="item-type-badge badge-scenario">Scenario</span>',
+      }[item.type] || '';
+      html += `<div class="item-row ${rowClass}" id="row-${item.id}">
+        <div class="item-content">
+          ${typeBadge}
+          <div class="item-text">${item.text}</div>
+          ${item.notes ? `<div class="item-notes">📌 ${item.notes}</div>` : ''}
+          <div class="score-btns">
+            <button class="score-btn" data-item="${item.id}" data-score="0" onclick="setScore('${item.id}',0)">0</button>
+            <button class="score-btn" data-item="${item.id}" data-score="1" onclick="setScore('${item.id}',1)">1</button>
+            <button class="score-btn" data-item="${item.id}" data-score="2" onclick="setScore('${item.id}',2)">2</button>
+          </div>
+          <div class="coaching-panel" id="coaching-${item.id}">
+            <h5>📋 Coaching Notes — Score = 1 (Coaching Given)</h5>
+            <div class="grid2">
+              <div class="coaching-field">
+                <label>Observation (what was seen)</label>
+                <textarea id="cn-obs-${item.id}" placeholder="Describe what the assessor observed…"></textarea>
+              </div>
+              <div class="coaching-field">
+                <label>Coaching Provided</label>
+                <textarea id="cn-coach-${item.id}" placeholder="What coaching was given to the worker…"></textarea>
+              </div>
+              <div class="coaching-field">
+                <label>Worker Response</label>
+                <input type="text" id="cn-resp-${item.id}" placeholder="How did the worker respond to the coaching?">
+              </div>
+              <div class="coaching-field">
+                <label>Agreed Action / Follow-up</label>
+                <input type="text" id="cn-action-${item.id}" placeholder="What was agreed to consolidate learning?">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  document.getElementById('score-sections').innerHTML = html;
+  updateOutcomePreview();
+}
+
+function setScore(itemId, score) {
+  currentAssessment.scores[itemId] = score;
+  // Update button styles
+  document.querySelectorAll(`[data-item="${itemId}"]`).forEach(btn => {
+    btn.className = 'score-btn';
+    if (parseInt(btn.dataset.score) === score) btn.className = `score-btn selected-${score}`;
+  });
+  // Show coaching panel only when score = 1
+  const panel = document.getElementById('coaching-' + itemId);
+  if (panel) {
+    if (score === 1) panel.classList.add('active');
+    else panel.classList.remove('active');
+  }
+  updateOutcomePreview();
+}
+
+function updateOutcomePreview() {
+  if (!currentAssessment) return;
+  const outcome = calcOutcome(currentAssessment.activityId, currentAssessment.scores);
+  const el = document.getElementById('preview-outcome-live');
+  if (outcome === 'Verified Competent') { el.textContent = '✓ Verified Competent'; el.style.color='#7deb9a'; }
+  else if (outcome === 'Competent with Coaching') { el.textContent = '~ Competent with Coaching'; el.style.color='#f0c060'; }
+  else if (outcome === 'Development Required') { el.textContent = '✗ Development Required'; el.style.color='#f08080'; }
+  else { el.textContent = '⏳ Pending'; el.style.color='#ccc'; }
+}
+
+function finishScoring() {
+  const chk = CHECKLISTS[currentAssessment.activityId];
+  const scored = Object.keys(currentAssessment.scores).length;
+  const total = chk.items.length;
+  if (scored < total) {
+    if (!confirm(`${total - scored} items have not been scored. Continue anyway?`)) return;
+  }
+  const outcome = calcOutcome(currentAssessment.activityId, currentAssessment.scores);
+  currentAssessment.outcome = outcome;
+  renderOutcome();
+  showAssessStep('outcome');
+  renderCoachingLog();
+}
+
+function renderOutcome() {
+  const o = currentAssessment.outcome;
+  const cls = {
+    'Verified Competent':'vc','Competent with Coaching':'cwc','Development Required':'dr'
+  }[o] || 'vc';
+  const icon = {'Verified Competent':'✓','Competent with Coaching':'~','Development Required':'✗'}[o]||'';
+  const msg = {
+    'Verified Competent': 'All critical behaviours demonstrated to standard. No coaching required.',
+    'Competent with Coaching': 'Assessor has provided coaching on one or more items. Reassessment not required unless further gaps emerge.',
+    'Development Required': 'One or more critical gaps identified. Worker must not perform this activity unsupervised. Reassessment required within 14 days.'
+  }[o] || '';
+
+  document.getElementById('outcome-display').innerHTML = `
+    <div class="outcome-banner ${cls}">
+      <h2>${icon} ${o}</h2>
+      <p>${msg}</p>
+      <p style="margin-top:8px;font-size:13px"><strong>${currentAssessment.assesseeName}</strong> | ${currentAssessment.activityName} | ${currentAssessment.rig} | ${formatDate(currentAssessment.date)}</p>
+    </div>`;
+
+  if (o === 'Development Required') {
+    document.getElementById('reassess-field').style.display = 'block';
+    const d = new Date(currentAssessment.date);
+    d.setDate(d.getDate() + 14);
+    document.getElementById('assess-reassess-date').value = d.toISOString().split('T')[0];
+  } else {
+    document.getElementById('reassess-field').style.display = 'none';
+  }
+}
+
+function saveAssessment() {
+  if (!currentAssessment) return;
+  currentAssessment.notes = document.getElementById('assess-notes').value;
+  if (currentAssessment.outcome === 'Development Required') {
+    currentAssessment.reassessmentDue = document.getElementById('assess-reassess-date').value;
+  }
+  // Collect coaching log from scoring panels
+  const chk = CHECKLISTS[currentAssessment.activityId];
+  const coachingLog = [];
+  if (chk) {
+    for (const item of chk.items) {
+      if (currentAssessment.scores[item.id] === 1) {
+        coachingLog.push({
+          itemId: item.id,
+          itemText: item.text,
+          itemType: item.type,
+          observation:    document.getElementById('cn-obs-'   + item.id)?.value.trim() || '',
+          coachingGiven:  document.getElementById('cn-coach-' + item.id)?.value.trim() || '',
+          workerResponse: document.getElementById('cn-resp-'  + item.id)?.value.trim() || '',
+          agreedAction:   document.getElementById('cn-action-'+ item.id)?.value.trim() || '',
+        });
+      }
+    }
+  }
+  currentAssessment.coachingLog = coachingLog;
+  currentAssessment.assessorName = ASSESSORS.find(a=>a.id===currentAssessment.assessorId)?.name || '';
+  currentAssessment.isDemo = false;
+  REGISTER.unshift(currentAssessment);
+  const saved = currentAssessment;
+  currentAssessment = null;
+  // Sync to Google Sheets if configured
+  if (SETTINGS.gsUrl) syncToGoogleSheets(saved);
+  // Reset form
+  showAssessStep('setup');
+  document.getElementById('setup-assessee-name').value = '';
+  document.getElementById('setup-emp-id').value = '';
+  document.getElementById('setup-role').value = '';
+  document.getElementById('assess-notes').value = '';
+  const syncMsg = SETTINGS.gsUrl ? ' Syncing to Google Sheets…' : '';
+  alert('Assessment saved to register.' + syncMsg);
+}
+
+function printAssessment() {
+  window.print();
+}
+
+function showAssessStep(step) {
+  document.querySelectorAll('.assessment-step').forEach(s => s.classList.remove('active'));
+  document.getElementById(`assess-step-${step}`).classList.add('active');
+}
+
+function backToSetup() { showAssessStep('setup'); currentAssessment = null; }
+function backToScoring() { showAssessStep('score'); }
+
+// ════════════════════════════════════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════════════════════════════════════
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+// ════════════════════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════════════════════
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+
+// ════════════════════════════════════════════════════════════════════════════
+// SETTINGS & GOOGLE SHEETS
+// ════════════════════════════════════════════════════════════════════════════
+const SETTINGS = { gsUrl: 'https://script.google.com/macros/s/AKfycbzucMOE2Rd_Ds58j_klDGJI-5gS68YtzHcn87rxkZlLmrINZ_pHLamYc0G1dhd48nHIgQ/exec', demoMode: true };
+
+function renderSettings() {
+  const urlEl = document.getElementById('gs-url');
+  if (urlEl) urlEl.value = SETTINGS.gsUrl || '';
+  const demoEl = document.getElementById('demo-toggle');
+  if (demoEl) demoEl.value = SETTINGS.demoMode ? 'on' : 'off';
+}
+
+function saveGSUrl() {
+  const url = (document.getElementById('gs-url').value || '').trim();
+  SETTINGS.gsUrl = url;
+  const el = document.getElementById('gs-status');
+  if (el) { el.textContent = url ? '✓ URL saved — will sync on next assessment save.' : 'URL cleared.'; el.style.color = url ? '#27ae60' : '#888'; }
+}
+
+function testGSConnection() {
+  const url = SETTINGS.gsUrl || (document.getElementById('gs-url').value || '').trim();
+  if (!url) { alert('Enter a Google Apps Script URL first.'); return; }
+  const el = document.getElementById('gs-status');
+  if (el) { el.textContent = 'Testing…'; el.style.color = '#888'; }
+  fetch(url, { method:'POST', body: JSON.stringify({test:true}), headers:{'Content-Type':'application/json'} })
+    .then(r => r.json())
+    .then(d => { if (el) { el.textContent = '✓ Connected: ' + (d.message || 'OK'); el.style.color = '#27ae60'; } })
+    .catch(() => { if (el) { el.textContent = '⚠ CORS blocked in browser — this is normal. Deploy script and test with a real assessment.'; el.style.color = '#e67e22'; } });
+}
+
+function toggleDemo() {
+  const val = document.getElementById('demo-toggle').value;
+  if (val === 'off') {
+    if (confirm('Turn off demo data? The register will show only real assessments for the rest of this session.')) {
+      SETTINGS.demoMode = false;
+      REGISTER = REGISTER.filter(a => !a.isDemo);
+    } else {
+      document.getElementById('demo-toggle').value = 'on';
+    }
+  } else {
+    SETTINGS.demoMode = true;
+    REGISTER = generateDemoData();
+  }
+}
+
+function syncToGoogleSheets(assessment) {
+  const url = SETTINGS.gsUrl;
+  if (!url) return;
+  fetch(url, { method:'POST', body: JSON.stringify(assessment), headers:{'Content-Type':'application/json'} })
+    .then(r => r.json())
+    .then(d => { if (d.status === 'ok') console.log('VOCGuard GS sync OK:', d.id); })
+    .catch(e => { console.warn('VOCGuard GS sync failed (local save unaffected):', e.message); });
+}
+
+function downloadAppScript() {
+  const code = `// VOCGuard Google Apps Script Backend v2
+// Deploy as Web App: Execute as Me, Access: Anyone
+// Paste the Web App URL into VOCGuard Settings
+
+const SHEET_ASSESSMENTS = 'VOC Submissions';
+const SHEET_COACHING     = 'Coaching Log';
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    if (data.test) {
+      return ok({ message: 'VOCGuard connection verified. Ready to receive assessments.' });
+    }
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    writeAssessment(ss, data);
+    if (data.coachingLog && data.coachingLog.length > 0) writeCoachingLog(ss, data);
+    return ok({ id: data.id });
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function ok(extra) {
+  return ContentService
+    .createTextOutput(JSON.stringify(Object.assign({ status: 'ok' }, extra)))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function ensureSheet(ss, name, headers) {
+  let sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.appendRow(headers);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function writeAssessment(ss, d) {
+  const sh = ensureSheet(ss, SHEET_ASSESSMENTS, [
+    'ID','Date','Assessor','Assessee Name','Employee ID','Role','Rig',
+    'Activity ID','Activity Name','Assessment Type','FTW Confirmed',
+    'Outcome','Reassessment Due','Notes','Coaching Items','Sync Time'
+  ]);
+  sh.appendRow([
+    d.id, d.date, d.assessorName || '', d.assesseeName, d.assesseeId || '',
+    d.role || '', d.rig, d.activityId, d.activityName, d.assessmentType || '',
+    d.ftwConfirmed ? 'Yes' : 'No', d.outcome, d.reassessmentDue || '',
+    d.notes || '', (d.coachingLog || []).length, new Date().toISOString()
+  ]);
+}
+
+function writeCoachingLog(ss, d) {
+  const sh = ensureSheet(ss, SHEET_COACHING, [
+    'Assessment ID','Date','Assessor','Assessee','Rig','Activity',
+    'Item ID','Item Text','Item Type','Observation','Coaching Given',
+    'Worker Response','Agreed Action'
+  ]);
+  for (const item of d.coachingLog) {
+    sh.appendRow([
+      d.id, d.date, d.assessorName || '', d.assesseeName, d.rig, d.activityName,
+      item.itemId, item.itemText, item.itemType || '',
+      item.observation || '', item.coachingGiven || '',
+      item.workerResponse || '', item.agreedAction || ''
+    ]);
+  }
+}
+`;
+  const blob = new Blob([code], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'VOCGuard-AppScript.gs'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PRINT BLANK FORM + QR CODE
+// ════════════════════════════════════════════════════════════════════════════
+function printBlankForm() {
+  const actId = document.getElementById('setup-activity').value;
+  if (!actId) { alert('Please select a VOC Activity before printing.'); return; }
+
+  const assessorId  = document.getElementById('setup-assessor').value;
+  const date        = document.getElementById('setup-date').value;
+  const name        = document.getElementById('setup-assessee-name').value.trim();
+  const empId       = document.getElementById('setup-emp-id').value.trim();
+  const rig         = document.getElementById('setup-rig').value;
+  const role        = document.getElementById('setup-role').value.trim();
+  const actName     = ACTIVITIES.find(a => a.id === actId)?.name || actId;
+  const assessorName = ASSESSORS.find(a => a.id === assessorId)?.name || '(not selected)';
+  const chk         = CHECKLISTS[actId];
+  if (!chk) { alert('No checklist data for this activity.'); return; }
+
+  const qrPayload = JSON.stringify({ ver:'VG2', assessorId, date, name, empId, rig, actId, role });
+
+  const sections = { A:[], B:[], C:[] };
+  for (const item of chk.items) sections[item.section].push(item);
+  const SLABELS = {
+    A: 'SECTION A — KNOWLEDGE RETENTION (VERBAL)',
+    B: 'SECTION B — CRITICAL PHYSICAL BEHAVIOURS \u2605',
+    C: 'SECTION C — SUPPORTING BEHAVIOURS & SCENARIOS'
+  };
+
+  let itemsHTML = '';
+  for (const [sec, items] of Object.entries(sections)) {
+    if (!items.length) continue;
+    itemsHTML += `<div style="background:#1B3A5C;color:#fff;padding:5px 10px;font-size:10px;font-weight:bold;margin-top:10px">${SLABELS[sec]}</div>`;
+    for (const item of items) {
+      const bg = item.type==='critical' ? '#fff8f8' : item.type==='verbal' ? '#f8fcff' : '#fff';
+      const mark = item.type==='critical' ? '\u2605' : item.type==='verbal' ? 'V' : 'S';
+      itemsHTML += `<div style="border-bottom:1.5px solid #ddd;background:${bg}">
+        <div style="display:flex;align-items:flex-start;padding:5px 8px;gap:6px">
+          <div style="font-size:9px;color:#888;width:14px;padding-top:2px;flex-shrink:0;font-weight:bold">${mark}</div>
+          <div style="flex:1;font-size:10px;line-height:1.6">
+            ${item.type==='critical' ? '<div style="font-size:8px;font-weight:bold;color:#922b21;background:#fde8e8;display:inline-block;padding:1px 6px;border-radius:3px;margin-bottom:3px">★ CRITICAL BEHAVIOUR — Score 0 = DEVELOPMENT REQUIRED</div><br>' : ''}
+            ${item.text}
+            ${item.notes ? `<div style="font-size:8.5px;color:#888;font-style:italic;margin-top:2px">ℹ️ ${item.notes}</div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;margin-left:4px">
+            <div style="display:flex;gap:3px">
+              <div style="width:22px;height:22px;border:1.5px solid #c0392b;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:#c0392b">0</div>
+              <div style="width:22px;height:22px;border:1.5px solid #e67e22;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:#e67e22">1</div>
+              <div style="width:22px;height:22px;border:1.5px solid #27ae60;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:#27ae60">2</div>
+            </div>
+            <div style="font-size:7.5px;color:#aaa">circle score</div>
+          </div>
+        </div>
+        <div style="background:#fffbf0;border-top:1px dashed #f0d070;padding:4px 8px 5px 28px">
+          <div style="font-size:8px;color:#856404;font-weight:bold;margin-bottom:3px">✏️ COACHING RECORD — <em style="font-weight:normal">Complete if score = 0 or 1 (mandatory for CwC)</em></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:8.5px">
+            <div>Observation (what was seen):<div style="border-bottom:1px solid #ccc;min-height:14px;margin-top:2px"></div></div>
+            <div>Coaching Given (what was said / demonstrated):<div style="border-bottom:1px solid #ccc;min-height:14px;margin-top:2px"></div></div>
+            <div>Worker Response:<div style="border-bottom:1px solid #ccc;min-height:14px;margin-top:2px"></div></div>
+            <div>Agreed Action / Follow-up:<div style="border-bottom:1px solid #ccc;min-height:14px;margin-top:2px"></div></div>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+
+  const [y,m,d2] = (date||'').split('-');
+  const MONTHS = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmtDate = date ? `${d2}-${MONTHS[parseInt(m)]}-${y}` : '___________';
+
+  const formHTML = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:Arial,sans-serif; padding:14px; }
+@page { size:A4; margin:10mm; }
+@media print { .no-print { display:none !important; } }
+.hdr { background:#1B3A5C; color:#fff; padding:8px 12px; border-radius:4px 4px 0 0; display:flex; justify-content:space-between; align-items:center; }
+.meta { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; padding:8px 10px; background:#f4f6f9; border:1px solid #ddd; border-top:none; }
+.mc { font-size:10px; } .mc .lbl { font-size:8.5px; color:#666; margin-bottom:1px; }
+</style></head><body>
+<div class="hdr">
+  <div>
+    <div style="font-size:13px;font-weight:bold">VOCGuard — Verification of Competency Assessment</div>
+    <div style="font-size:9.5px;opacity:0.8">BHDC HSE-MS | ${actId} — ${actName} | Rev 03</div>
+  </div>
+  <div id="qr-div"></div>
+</div>
+<div class="meta">
+  <div class="mc"><div class="lbl">ASSESSEE NAME</div><strong>${name||'_____________________________'}</strong></div>
+  <div class="mc"><div class="lbl">EMPLOYEE ID</div>${empId||'________________'}</div>
+  <div class="mc"><div class="lbl">DATE</div>${fmtDate}</div>
+  <div class="mc"><div class="lbl">RIG / LOCATION</div>${rig}</div>
+  <div class="mc"><div class="lbl">ROLE / TRADE</div>${role||'________________'}</div>
+  <div class="mc"><div class="lbl">ASSESSOR</div>${assessorName}</div>
+</div>
+<div style="padding:5px 10px;background:#fff3cd;border:1px solid #ffc107;border-top:none;font-size:9px">
+  <strong>SCORING:</strong> &nbsp;0 = Critical Gap (cannot perform unsupervised) &nbsp;\u2502&nbsp; 1 = Competent with Coaching Given &nbsp;\u2502&nbsp; 2 = Verified Competent &nbsp;\u2502&nbsp; <strong>\u2605 Any 0 on Critical Behaviour = DEVELOPMENT REQUIRED</strong>
+</div>
+<div style="background:#e8f4fd;border:1.5px solid #2E6DA4;border-radius:4px;padding:8px 10px;margin-top:8px;font-size:9px;line-height:1.8">
+  <strong style="font-size:10px">ASSESSOR INSTRUCTIONS</strong><br>
+  ① Score every item. Circle the number: <strong style="color:#c0392b">0 = Critical Gap</strong> &nbsp;|&nbsp; <strong style="color:#e67e22">1 = Coaching Given</strong> &nbsp;|&nbsp; <strong style="color:#27ae60">2 = Verified Competent</strong><br>
+  ② Items marked <strong>★ CRITICAL BEHAVIOUR</strong>: a score of 0 on <em>any</em> critical item = automatic <strong>DEVELOPMENT REQUIRED</strong>. No exceptions.<br>
+  ③ Score 0 or 1 on any item: the <strong>COACHING RECORD</strong> section below that item is <strong>mandatory</strong>. Document observation, coaching given, and agreed action.<br>
+  ④ CwC Outcome: assessee must sign confirming coaching was received and understood.<br>
+  ⑤ Development Required: worker is <strong>prohibited from performing this activity unsupervised</strong> until reassessment within 14 days.
+</div>
+${itemsHTML}
+<div style="display:flex;gap:10px;padding:8px;border:1.5px solid #1B3A5C;border-radius:4px;margin-top:10px">
+  <div style="font-weight:bold;font-size:10px;align-self:center;white-space:nowrap">OUTCOME:</div>
+  <div style="flex:1;padding:6px;border:1.5px solid #27ae60;border-radius:4px;text-align:center;font-size:10px;font-weight:bold;color:#27ae60">\u25a1 Verified Competent</div>
+  <div style="flex:1;padding:6px;border:1.5px solid #e67e22;border-radius:4px;text-align:center;font-size:10px;font-weight:bold;color:#e67e22">\u25a1 Competent with Coaching</div>
+  <div style="flex:1;padding:6px;border:1.5px solid #c0392b;border-radius:4px;text-align:center;font-size:10px;font-weight:bold;color:#c0392b">\u25a1 Development Required</div>
+</div>
+<div style="margin-top:8px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:9px;color:#666">
+  ASSESSOR NOTES / OBSERVATIONS<div style="height:40px;border-bottom:1px solid #eee;margin-top:4px"></div><div style="height:20px"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+  <div style="border:1px solid #ddd;padding:8px;border-radius:4px">
+    <div style="font-size:8.5px;color:#666">ASSESSOR SIGNATURE &amp; DATE</div>
+    <div style="height:26px;border-bottom:1px solid #ccc;margin-top:8px"></div>
+    <div style="font-size:8.5px;color:#999;margin-top:3px">${assessorName}</div>
+  </div>
+  <div style="border:1px solid #ddd;padding:8px;border-radius:4px">
+    <div style="font-size:8.5px;color:#666">ASSESSEE SIGNATURE (I confirm this was conducted fairly)</div>
+    <div style="height:26px;border-bottom:1px solid #ccc;margin-top:8px"></div>
+    <div style="font-size:8.5px;color:#999;margin-top:3px">${name||'_______________'}</div>
+  </div>
+</div>
+<div style="text-align:center;margin-top:8px;font-size:8px;color:#bbb">VOCGuard v2.0 | https://thejadebuddha.github.io/VOCGuard/ | BHDC-HSE-TRN-PRO-001 Rev 03 | Generated: ${new Date().toLocaleDateString('en-GB')}</div>
+<button class="no-print" onclick="window.print()" style="margin-top:8px;padding:5px 14px;background:#1B3A5C;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px">🖨️ Print</button>
+<script>
+  window.onload = function() {
+    try {
+      new QRCode(document.getElementById('qr-div'), { text: ${JSON.stringify(qrPayload)}, width:72, height:72, correctLevel: QRCode.CorrectLevel.M });
+    } catch(e) {}
+    setTimeout(() => window.print(), 900);
+  };
+<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (win) { win.document.write(formHTML); win.document.close(); }
+  else { alert('Please allow pop-ups for this page to print forms.'); }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SCAN UPLOAD — QR DECODE
+// ════════════════════════════════════════════════════════════════════════════
+function handleScanUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      const imgData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+      if (typeof jsQR === 'undefined') { alert('QR scanner not available. Enter details manually.'); return; }
+      const code = jsQR(imgData.data, imgData.width, imgData.height);
+      if (code) {
+        try {
+          const d = JSON.parse(code.data);
+          if (d.ver === 'VG2') {
+            if (d.assessorId) document.getElementById('setup-assessor').value = d.assessorId;
+            if (d.date)       document.getElementById('setup-date').value = d.date;
+            if (d.name)       document.getElementById('setup-assessee-name').value = d.name;
+            if (d.empId)      document.getElementById('setup-emp-id').value = d.empId;
+            if (d.rig)        document.getElementById('setup-rig').value = d.rig;
+            if (d.actId)      document.getElementById('setup-activity').value = d.actId;
+            if (d.role)       document.getElementById('setup-role').value = d.role;
+            alert('\u2713 QR decoded. Review the populated fields, then click Begin Assessment.');
+          } else {
+            alert('QR found but is not a VOCGuard form code.');
+          }
+        } catch(err) { alert('QR found but data could not be parsed: ' + err.message); }
+      } else {
+        alert('No QR code detected in image. Check the image is clear and try again, or enter details manually.');
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// COACHING LOG RENDERER (called from finishScoring)
+// ════════════════════════════════════════════════════════════════════════════
+function renderCoachingLog() {
+  if (!currentAssessment) return;
+  const chk = CHECKLISTS[currentAssessment.activityId];
+  if (!chk) return;
+  const coachedItems = chk.items.filter(i => currentAssessment.scores[i.id] === 1);
+  const card    = document.getElementById('coaching-log-card');
+  const content = document.getElementById('coaching-log-content');
+  if (!card || !content) return;
+  if (!coachedItems.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  content.innerHTML = coachedItems.map(item => {
+    const obs    = document.getElementById('cn-obs-'   + item.id)?.value || '';
+    const coach  = document.getElementById('cn-coach-' + item.id)?.value || '';
+    const resp   = document.getElementById('cn-resp-'  + item.id)?.value || '';
+    const action = document.getElementById('cn-action-'+ item.id)?.value || '';
+    const empty = '<em style="color:#bbb">Not recorded</em>';
+    return `<div style="border:1px solid #f0d070;border-radius:6px;padding:12px 14px;margin-bottom:10px;background:#fffbf0">
+      <div style="font-size:12px;font-weight:bold;color:#856404;margin-bottom:8px">
+        ${item.type==='critical'?'\u2605 ':''}<em style="font-weight:normal">${item.text.length>90?item.text.slice(0,90)+'\u2026':item.text}</em>
+      </div>
+      <div class="grid2" style="gap:8px;font-size:12px">
+        <div><div style="font-size:9.5px;color:#888;font-weight:600;margin-bottom:2px">OBSERVATION</div>${obs||empty}</div>
+        <div><div style="font-size:9.5px;color:#888;font-weight:600;margin-bottom:2px">COACHING GIVEN</div>${coach||empty}</div>
+        <div><div style="font-size:9.5px;color:#888;font-weight:600;margin-bottom:2px">WORKER RESPONSE</div>${resp||empty}</div>
+        <div><div style="font-size:9.5px;color:#888;font-weight:600;margin-bottom:2px">AGREED ACTION</div>${action||empty}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════════════════
+document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+initAssessSetup();
+populateRegisterFilters();
+renderDashboard();
+</script>
+</body>
+</html>
