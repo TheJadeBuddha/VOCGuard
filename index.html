@@ -169,6 +169,27 @@ table.data-table tr:hover td { background: #f8fafd; }
 .step-dot.done { background: var(--vc); }
 .step-dot.active { background: var(--bhdc-mid); }
 
+/* ── Scan Form ── */
+.scan-step { display: none; }
+.scan-step.active { display: block; }
+.scan-score-section { margin-bottom: 16px; }
+.scan-score-section h4 { background: var(--bhdc-blue); color: #fff; padding: 8px 14px; border-radius: 6px 6px 0 0; font-size: 13px; margin: 0; }
+.scan-score-list { border: 1px solid var(--border); border-top: none; border-radius: 0 0 6px 6px; }
+.scan-score-row { display: flex; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); gap: 10px; }
+.scan-score-row:last-child { border-bottom: none; }
+.scan-score-row.scan-critical { background: #fff8f8; }
+.scan-score-row .scan-item-label { flex: 1; font-size: 13px; }
+.scan-score-row .scan-item-type { font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 8px; margin-right: 6px; }
+.scan-score-row .scan-item-type.ct { background: #f8d7da; color: #c0392b; }
+.scan-score-row .scan-item-type.vb { background: var(--bhdc-light); color: var(--bhdc-blue); }
+.scan-score-row .scan-item-type.sp { background: #e8f5e9; color: #27ae60; }
+.scan-score-btns { display: flex; gap: 4px; }
+.scan-score-btns button { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #ccc; background: #fff; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.15s; color: #555; }
+.scan-score-btns button:hover { border-color: var(--bhdc-mid); }
+.scan-score-btns button.sel-0 { background: var(--dr); border-color: var(--dr); color: #fff; }
+.scan-score-btns button.sel-1 { background: var(--cwc); border-color: var(--cwc); color: #fff; }
+.scan-score-btns button.sel-2 { background: var(--vc); border-color: var(--vc); color: #fff; }
+.scan-filed-badge { display: inline-block; background: #d5f5e3; color: #27ae60; font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; margin-top: 8px; }
 /* ── VOCGuard v2 additions ── */
 /* Coaching Panel */
 .coaching-panel { display:none; background:#fffbf0; border:1px solid #f0d070; border-radius:6px; padding:12px 14px; margin-top:10px; }
@@ -225,13 +246,14 @@ table.data-table tr:hover td { background: #f8fafd; }
   </div>
   <div id="header-right">
     <div id="hdr-date"></div>
-    <div>v2.0 | 11 Activities | 4 Rigs | <span style="opacity:0.6;font-size:10px">https://thejadebuddha.github.io/VOCGuard/</span></div>
+    <div>v2.1 | 11 Activities | 4 Rigs | <span style="opacity:0.6;font-size:10px">https://thejadebuddha.github.io/VOCGuard/</span></div>
   </div>
 </div>
 
 <div id="nav">
   <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
   <button class="nav-btn" data-page="assess">✅ New Assessment</button>
+  <button class="nav-btn" data-page="scan">📷 Scan Form</button>
   <button class="nav-btn" data-page="register">📋 Register</button>
   <button class="nav-btn" data-page="heatmap">🗺️ Fleet Heat Map</button>
   <button class="nav-btn" data-page="individual">👤 Individual</button>
@@ -354,6 +376,120 @@ table.data-table tr:hover td { background: #f8fafd; }
         <button class="btn btn-outline" onclick="backToScoring()">← Review Scores</button>
         <button class="btn btn-success" onclick="saveAssessment()">✓ Save to Register</button>
         <button class="btn btn-outline no-print" onclick="printAssessment()">🖨️ Print PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCAN FORM ═══ -->
+<div id="page-scan" class="page">
+  <div class="section-title">📷 Scan Paper VOC Form</div>
+
+  <!-- Step 1: Capture / Upload -->
+  <div id="scan-step-capture" class="scan-step active">
+    <div class="card" style="max-width:680px">
+      <h3>Step 1 — Capture Completed VOC Form</h3>
+      <p style="font-size:13px;color:#555;margin-bottom:16px">Take a photo of a completed paper VOC form or upload a scan. The QR code printed on the form will auto-fill the assessment metadata.</p>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+        <label class="btn btn-primary" style="cursor:pointer">
+          📷 Take Photo
+          <input type="file" accept="image/*" capture="environment" id="scan-camera" style="display:none" onchange="handleScanFile(this)">
+        </label>
+        <label class="btn btn-outline" style="cursor:pointer">
+          📁 Upload Image
+          <input type="file" accept="image/*" id="scan-upload" style="display:none" onchange="handleScanFile(this)">
+        </label>
+      </div>
+
+      <div id="scan-preview-wrap" style="display:none;margin-bottom:16px">
+        <canvas id="scan-canvas" style="max-width:100%;border:1px solid var(--border);border-radius:6px"></canvas>
+        <div id="scan-qr-status" class="small" style="margin-top:8px"></div>
+      </div>
+
+      <div id="scan-metadata" style="display:none">
+        <h3 style="margin-top:16px">QR Code Data Extracted</h3>
+        <table class="data-table" style="max-width:500px;margin-bottom:16px" id="scan-meta-table"></table>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-success" onclick="scanProceedToScores()">Proceed to Score Entry</button>
+          <button class="btn btn-outline" onclick="scanReset()">Reset</button>
+        </div>
+      </div>
+
+      <div id="scan-no-qr" style="display:none;margin-top:16px">
+        <h3>No QR Code Found — Manual Entry</h3>
+        <p class="small" style="margin-bottom:12px">The QR code could not be read. Fill in the metadata manually, then proceed to enter scores.</p>
+        <div class="grid2" style="max-width:600px">
+          <div class="form-group">
+            <label>Assessor *</label>
+            <select id="scan-assessor"></select>
+          </div>
+          <div class="form-group">
+            <label>Date *</label>
+            <input type="date" id="scan-date">
+          </div>
+          <div class="form-group">
+            <label>Assessee *</label>
+            <select id="scan-assessee" onchange="onScanAssesseeSelect(this)">
+              <option value="">Select worker...</option>
+            </select>
+            <input type="hidden" id="scan-assessee-name">
+            <input type="hidden" id="scan-emp-id">
+          </div>
+          <div class="form-group">
+            <label>Rig *</label>
+            <select id="scan-rig">
+              <option value="">Select rig...</option>
+              <option value="Rig 67">Rig 67</option>
+              <option value="Rig 68">Rig 68</option>
+              <option value="Rig 117">Rig 117</option>
+              <option value="Rig 118">Rig 118</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <input type="text" id="scan-role" placeholder="e.g. Floorman">
+          </div>
+          <div class="form-group">
+            <label>Activity *</label>
+            <select id="scan-activity"></select>
+          </div>
+        </div>
+        <button class="btn btn-success" onclick="scanProceedManual()" style="margin-top:8px">Proceed to Score Entry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Quick Score Entry -->
+  <div id="scan-step-scores" class="scan-step" style="display:none">
+    <div class="card" style="max-width:800px">
+      <h3>Step 2 — Enter Scores from Paper Form</h3>
+      <p class="small" style="margin-bottom:12px">Tap 0 / 1 / 2 for each item, reading from the completed paper form. Critical items are highlighted in red.</p>
+      <div id="scan-meta-summary" style="background:var(--bhdc-light);padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:16px"></div>
+      <div id="scan-score-grid"></div>
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button class="btn btn-outline" onclick="scanBackToCapture()">Back</button>
+        <button class="btn btn-primary" onclick="scanReviewOutcome()">Review & Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Review & Save -->
+  <div id="scan-step-review" class="scan-step" style="display:none">
+    <div class="card" style="max-width:680px">
+      <h3>Step 3 — Review & Save</h3>
+      <div id="scan-outcome-banner"></div>
+      <div class="form-group" style="margin-top:16px">
+        <label>Additional Notes</label>
+        <textarea id="scan-notes" placeholder="Optional notes..."></textarea>
+      </div>
+      <div id="scan-reassess-wrap" style="display:none" class="form-group">
+        <label>Reassessment Due Date *</label>
+        <input type="date" id="scan-reassess-date">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="btn btn-outline" onclick="scanBackToScores()">Back to Scores</button>
+        <button class="btn btn-success" onclick="scanSaveAssessment()">Save Assessment</button>
       </div>
     </div>
   </div>
@@ -521,12 +657,12 @@ table.data-table tr:hover td { background: #f8fafd; }
   <div class="settings-section">
     <h3>ℹ️ About VOCGuard</h3>
     <table class="data-table" style="max-width:440px">
-      <tr><td style="font-weight:600;padding:6px 12px;width:160px">Version</td><td style="padding:6px 12px">2.0 — March 2026</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px;width:160px">Version</td><td style="padding:6px 12px">2.1 — March 2026</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">System</td><td style="padding:6px 12px">BHDC HSE Management System</td></tr>
-      <tr><td style="font-weight:600;padding:6px 12px">Governing Doc</td><td style="padding:6px 12px">BHDC-HSE-TRN-PRO-001 Rev 03</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">Governing Doc</td><td style="padding:6px 12px">BHDC-HSE-TRN-PRO-001 Rev 04</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">VOC Activities</td><td style="padding:6px 12px">11 (CHK-001 to CHK-011)</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">Assessors</td><td style="padding:6px 12px">9 (4 × Rig 117, 4 × Rig 118, HSE Mgr)</td></tr>
-      <tr><td style="font-weight:600;padding:6px 12px">New in v2</td><td style="padding:6px 12px">Google Sheets sync, trend charts, print forms, coaching log</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">New in v2.1</td><td style="padding:6px 12px">Paper form scan (QR + score entry), per-trainee CAMS folder filing, backend v3.2</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">Live URL</td><td style="padding:6px 12px"><a href="https://thejadebuddha.github.io/VOCGuard/" target="_blank" style="color:#2E6DA4">https://thejadebuddha.github.io/VOCGuard/</a></td></tr>
     </table>
   </div>
@@ -1866,7 +2002,12 @@ function syncToGoogleSheets(assessment) {
   if (!url) return;
   fetch(url, { method:'POST', body: JSON.stringify(assessment), headers:{'Content-Type':'application/json'} })
     .then(r => r.json())
-    .then(d => { if (d.status === 'ok') console.log('VOCGuard GS sync OK:', d.id); })
+    .then(d => {
+      if (d.status === 'ok') {
+        console.log('VOCGuard GS sync OK:', d.id);
+        if (d.filedTo) console.log('VOCGuard CAMS filed:', d.filedTo);
+      }
+    })
     .catch(e => { console.warn('VOCGuard GS sync failed (local save unaffected):', e.message); });
 }
 
@@ -2246,10 +2387,336 @@ function renderCoachingLog() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// SCAN FORM — Paper VOC → Digital Assessment
+// ════════════════════════════════════════════════════════════════════════════
+let scanData = null; // holds extracted metadata from QR or manual entry
+
+function initScanPage() {
+  // Populate assessor dropdown
+  const aEl = document.getElementById('scan-assessor');
+  if (aEl && aEl.options.length <= 1) {
+    aEl.innerHTML = '<option value="">Select assessor...</option>';
+    ASSESSORS.forEach(a => {
+      aEl.innerHTML += `<option value="${a.id}">${a.name} (${a.rig})</option>`;
+    });
+  }
+  // Populate activity dropdown
+  const actEl = document.getElementById('scan-activity');
+  if (actEl && actEl.options.length <= 1) {
+    actEl.innerHTML = '<option value="">Select activity...</option>';
+    ACTIVITIES.forEach(a => {
+      actEl.innerHTML += `<option value="${a.id}">${a.name}</option>`;
+    });
+  }
+  // Populate assessee dropdown (all personnel)
+  const assEl = document.getElementById('scan-assessee');
+  if (assEl && assEl.options.length <= 1) {
+    // Mirror the setup from main assess page
+    const setupAssessee = document.getElementById('setup-assessee-select');
+    if (setupAssessee) {
+      assEl.innerHTML = setupAssessee.innerHTML;
+    }
+  }
+}
+
+function handleScanFile(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.getElementById('scan-canvas');
+      const ctx = canvas.getContext('2d');
+      // Scale down if very large
+      const maxW = 800;
+      const scale = img.width > maxW ? maxW / img.width : 1;
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      document.getElementById('scan-preview-wrap').style.display = 'block';
+
+      // Try QR scan
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const qr = jsQR(imageData.data, imageData.width, imageData.height);
+      if (qr && qr.data) {
+        try {
+          const payload = JSON.parse(qr.data);
+          if (payload.ver === 'VG2') {
+            showScanMetadata(payload);
+            return;
+          }
+        } catch(ex) {}
+      }
+      // No QR found — show manual entry
+      document.getElementById('scan-qr-status').innerHTML = '<span style="color:#e67e22">No QR code detected. Use manual entry below.</span>';
+      document.getElementById('scan-no-qr').style.display = 'block';
+      document.getElementById('scan-metadata').style.display = 'none';
+      initScanPage();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function showScanMetadata(payload) {
+  const assessorName = ASSESSORS.find(a => a.id === payload.assessorId)?.name || payload.assessorId;
+  const actName = ACTIVITIES.find(a => a.id === payload.actId)?.name || payload.actId;
+  scanData = {
+    assessorId: payload.assessorId,
+    assessorName: assessorName,
+    date: payload.date,
+    assesseeName: payload.name,
+    assesseeId: payload.empId,
+    rig: payload.rig,
+    role: payload.role,
+    activityId: payload.actId,
+    activityName: actName
+  };
+
+  const rows = [
+    ['Assessor', assessorName],
+    ['Date', payload.date],
+    ['Person Assessed', payload.name + (payload.empId ? ' (' + payload.empId + ')' : '')],
+    ['Rig', payload.rig],
+    ['Role', payload.role || '—'],
+    ['Activity', actName]
+  ];
+  const tbl = document.getElementById('scan-meta-table');
+  tbl.innerHTML = '<thead><tr><th style="width:140px">Field</th><th>Value</th></tr></thead><tbody>' +
+    rows.map(r => `<tr><td style="font-weight:600">${r[0]}</td><td>${r[1]}</td></tr>`).join('') +
+    '</tbody>';
+
+  document.getElementById('scan-qr-status').innerHTML = '<span style="color:#27ae60;font-weight:600">QR code scanned successfully</span>';
+  document.getElementById('scan-metadata').style.display = 'block';
+  document.getElementById('scan-no-qr').style.display = 'none';
+}
+
+function onScanAssesseeSelect(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  if (opt && opt.dataset) {
+    document.getElementById('scan-assessee-name').value = opt.dataset.name || opt.textContent.split(' (')[0];
+    document.getElementById('scan-emp-id').value = opt.value;
+  }
+}
+
+function scanProceedToScores() {
+  if (!scanData || !scanData.activityId) { alert('No activity data. Please scan again.'); return; }
+  showScanScoreGrid(scanData.activityId);
+}
+
+function scanProceedManual() {
+  const assessorId = document.getElementById('scan-assessor').value;
+  const date = document.getElementById('scan-date').value;
+  const assessee = document.getElementById('scan-assessee');
+  const rig = document.getElementById('scan-rig').value;
+  const actId = document.getElementById('scan-activity').value;
+  const role = document.getElementById('scan-role').value;
+
+  if (!assessorId || !date || !assessee.value || !rig || !actId) {
+    alert('Please fill in all required fields (Assessor, Date, Assessee, Rig, Activity).');
+    return;
+  }
+
+  const assessorName = ASSESSORS.find(a => a.id === assessorId)?.name || '';
+  const actName = ACTIVITIES.find(a => a.id === actId)?.name || actId;
+  const opt = assessee.options[assessee.selectedIndex];
+
+  scanData = {
+    assessorId, assessorName, date,
+    assesseeName: opt.dataset?.name || opt.textContent.split(' (')[0] || '',
+    assesseeId: assessee.value,
+    rig, role,
+    activityId: actId,
+    activityName: actName
+  };
+
+  showScanScoreGrid(actId);
+}
+
+function showScanScoreGrid(actId) {
+  const chk = CHECKLISTS[actId];
+  if (!chk) { alert('No checklist found for activity ' + actId); return; }
+
+  // Show step 2
+  document.querySelectorAll('.scan-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('scan-step-scores').style.display = 'block';
+  document.getElementById('scan-step-scores').classList.add('active');
+
+  // Summary bar
+  document.getElementById('scan-meta-summary').innerHTML =
+    `<strong>${scanData.assesseeName}</strong> | ${scanData.activityName} | ${scanData.rig} | ${scanData.date} | Assessor: ${scanData.assessorName}`;
+
+  // Build score grid by section
+  const sections = { A: [], B: [], C: [] };
+  for (const item of chk.items) {
+    if (!sections[item.section]) sections[item.section] = [];
+    sections[item.section].push(item);
+  }
+  const SLABELS = { A: 'Section A — Pre-Task Preparation', B: 'Section B — Task Execution', C: 'Section C — Post-Task / Housekeeping' };
+  const TYPE_LABELS = { Critical: 'ct', Verbal: 'vb', Supporting: 'sp', Scenario: 'vb' };
+
+  let html = '';
+  for (const sec of ['A', 'B', 'C']) {
+    if (!sections[sec] || sections[sec].length === 0) continue;
+    html += `<div class="scan-score-section"><h4>${SLABELS[sec] || 'Section ' + sec}</h4><div class="scan-score-list">`;
+    for (const item of sections[sec]) {
+      const cls = item.type === 'Critical' ? 'scan-critical' : '';
+      const typeCls = TYPE_LABELS[item.type] || 'vb';
+      html += `<div class="scan-score-row ${cls}">
+        <span class="scan-item-type ${typeCls}">${item.type}</span>
+        <span class="scan-item-label">${item.id}: ${item.text}</span>
+        <div class="scan-score-btns">
+          <button onclick="scanScore('${item.id}',0,this)" title="Critical Gap">0</button>
+          <button onclick="scanScore('${item.id}',1,this)" title="Coaching Given">1</button>
+          <button onclick="scanScore('${item.id}',2,this)" title="Competent">2</button>
+        </div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+  document.getElementById('scan-score-grid').innerHTML = html;
+
+  // Initialise scores object
+  scanData.scores = {};
+}
+
+function scanScore(itemId, score, btn) {
+  scanData.scores[itemId] = score;
+  // Clear siblings
+  btn.parentElement.querySelectorAll('button').forEach(b => {
+    b.className = '';
+  });
+  btn.className = 'sel-' + score;
+}
+
+function scanBackToCapture() {
+  document.querySelectorAll('.scan-step').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+  document.getElementById('scan-step-capture').style.display = 'block';
+  document.getElementById('scan-step-capture').classList.add('active');
+}
+
+function scanBackToScores() {
+  document.querySelectorAll('.scan-step').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+  document.getElementById('scan-step-scores').style.display = 'block';
+  document.getElementById('scan-step-scores').classList.add('active');
+}
+
+function scanReviewOutcome() {
+  if (!scanData || !scanData.activityId) return;
+  const chk = CHECKLISTS[scanData.activityId];
+  if (!chk) return;
+
+  // Check all items scored
+  const unscoredCount = chk.items.filter(i => scanData.scores[i.id] === undefined).length;
+  if (unscoredCount > 0) {
+    if (!confirm(unscoredCount + ' item(s) have no score. Unscored items will be treated as Competent (2). Continue?')) return;
+    // Default unscored to 2
+    for (const item of chk.items) {
+      if (scanData.scores[item.id] === undefined) scanData.scores[item.id] = 2;
+    }
+  }
+
+  const outcome = calcOutcome(scanData.activityId, scanData.scores);
+  scanData.outcome = outcome;
+
+  // Show review step
+  document.querySelectorAll('.scan-step').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+  document.getElementById('scan-step-review').style.display = 'block';
+  document.getElementById('scan-step-review').classList.add('active');
+
+  const cls = outcome === 'Verified Competent' ? 'vc' : outcome === 'Competent with Coaching' ? 'cwc' : 'dr';
+  document.getElementById('scan-outcome-banner').innerHTML =
+    `<div class="outcome-banner ${cls}"><h2>${outcome}</h2><p>${scanData.assesseeName} — ${scanData.activityName} — ${scanData.date}</p></div>`;
+
+  // Show reassessment date field for DR
+  const reassessWrap = document.getElementById('scan-reassess-wrap');
+  if (outcome === 'Development Required') {
+    reassessWrap.style.display = 'block';
+    // Default to 30 days from now
+    const d = new Date(); d.setDate(d.getDate() + 30);
+    document.getElementById('scan-reassess-date').value = d.toISOString().split('T')[0];
+  } else {
+    reassessWrap.style.display = 'none';
+  }
+}
+
+function scanSaveAssessment() {
+  if (!scanData) return;
+
+  // Build assessment object matching the standard format
+  const assessment = {
+    id: 'VOC-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2,4).toUpperCase(),
+    date: scanData.date,
+    assessorId: scanData.assessorId,
+    assessorName: scanData.assessorName,
+    assesseeName: scanData.assesseeName,
+    assesseeId: scanData.assesseeId,
+    role: scanData.role || '',
+    rig: scanData.rig,
+    activityId: scanData.activityId,
+    activityName: scanData.activityName,
+    assessmentType: 'Paper Scan',
+    ftwConfirmed: true,
+    outcome: scanData.outcome,
+    reassessmentDue: scanData.outcome === 'Development Required' ? (document.getElementById('scan-reassess-date').value || '') : '',
+    notes: (document.getElementById('scan-notes').value || '').trim(),
+    scores: scanData.scores,
+    coachingLog: [],
+    isDemo: false
+  };
+
+  // Collect coaching entries for score=1 items
+  const chk = CHECKLISTS[scanData.activityId];
+  if (chk) {
+    for (const item of chk.items) {
+      if (scanData.scores[item.id] === 1) {
+        assessment.coachingLog.push({
+          itemId: item.id,
+          itemText: item.text,
+          itemType: item.type,
+          observation: '',
+          coachingGiven: 'Recorded from paper form — refer to physical VOC sheet for coaching details.',
+          workerResponse: '',
+          agreedAction: ''
+        });
+      }
+    }
+  }
+
+  // Add to register
+  REGISTER.unshift(assessment);
+
+  // Sync to Google Sheets
+  if (SETTINGS.gsUrl) syncToGoogleSheets(assessment);
+
+  // Reset scan
+  scanReset();
+  renderDashboard();
+  alert('Assessment saved from paper form scan.' + (SETTINGS.gsUrl ? ' Syncing to Google Sheets & filing to CAMS folder...' : ''));
+  showPage('dashboard');
+}
+
+function scanReset() {
+  scanData = null;
+  document.querySelectorAll('.scan-step').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+  document.getElementById('scan-step-capture').style.display = 'block';
+  document.getElementById('scan-step-capture').classList.add('active');
+  document.getElementById('scan-preview-wrap').style.display = 'none';
+  document.getElementById('scan-metadata').style.display = 'none';
+  document.getElementById('scan-no-qr').style.display = 'none';
+  document.getElementById('scan-qr-status').innerHTML = '';
+  // Clear file inputs
+  const cam = document.getElementById('scan-camera'); if (cam) cam.value = '';
+  const upl = document.getElementById('scan-upload'); if (upl) upl.value = '';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════════════════════
 document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
 initAssessSetup();
+initScanPage();
 populateRegisterFilters();
 // Load live data then render; falls back to demo if backend unavailable
 initRegister().then(() => {
