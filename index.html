@@ -661,7 +661,7 @@ table.data-table tr:hover td { background: #f8fafd; }
       <tr><td style="font-weight:600;padding:6px 12px">System</td><td style="padding:6px 12px">BHDC HSE Management System</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">Governing Doc</td><td style="padding:6px 12px">BHDC-HSE-TRN-PRO-001 Rev 04</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">VOC Activities</td><td style="padding:6px 12px">11 (CHK-001 to CHK-011)</td></tr>
-      <tr><td style="font-weight:600;padding:6px 12px">Assessors</td><td style="padding:6px 12px">9 (4 × Rig 117, 4 × Rig 118, HSE Mgr)</td></tr>
+      <tr><td style="font-weight:600;padding:6px 12px">Assessors</td><td style="padding:6px 12px">17 (6 × Rig 67, 2 × Rig 68, 4 × Rig 117, 4 × Rig 118, HSE Mgr)</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">New in v2.1</td><td style="padding:6px 12px">Paper form scan (QR + score entry), per-trainee CAMS folder filing, backend v3.2</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">Live URL</td><td style="padding:6px 12px"><a href="https://thejadebuddha.github.io/VOCGuard/" target="_blank" style="color:#2E6DA4">https://thejadebuddha.github.io/VOCGuard/</a></td></tr>
     </table>
@@ -709,22 +709,22 @@ const ACTIVITIES = [
 const RIGS = ['Rig 67','Rig 68','Rig 117','Rig 118'];
 
 const ASSESSORS = [
-  {id:'BHDC-P-046',name:'Abderrahmane Bekkar',shortName:'A. Bekkar',rig:'Rig 67',role:'HSE Engineer'},
-  {id:'BHDC-P-047',name:'Hassan Abbas',shortName:'H. Abbas',rig:'Rig 67',role:'HSE Engineer'},
-  {id:'BHDC-P-048',name:'Ramesh Durai',shortName:'R. Durai',rig:'Rig 67',role:'HSE Engineer'},
-  {id:'BHDC-P-049',name:'Tayyab Ali Muhammad Hayat',shortName:'T. Hayat',rig:'Rig 67',role:'HSE Engineer'},
-  {id:'BHDC-P-050',name:'Aakash Hassan',shortName:'A. Hassan',rig:'Rig 67',role:'HSE Officer'},
-  {id:'BHDC-P-051',name:'Muhammad Sami Waqas Malik Haq',shortName:'M. Haq',rig:'Rig 67',role:'HSE Officer'},
-  {id:'BHDC-P-112',name:'Amjad Hussain',shortName:'A. Hussain',rig:'Rig 68',role:'HSE Officer'},
-  {id:'BHDC-P-113',name:'Asmat Nawaz',shortName:'A. Nawaz',rig:'Rig 68',role:'HSE Officer'},
-  {id:'BHDC-P-157',name:'Ali Raza Muhammad Amin',shortName:'A. Amin',rig:'Rig 117',role:'HSE Advisor'},
-  {id:'BHDC-P-158',name:'Hamza Feguiri',shortName:'H. Feguiri',rig:'Rig 117',role:'HSE Advisor'},
-  {id:'BHDC-P-159',name:'Karunesh Kumar Madan Mohan Panday',shortName:'K. Panday',rig:'Rig 117',role:'HSE Advisor'},
-  {id:'BHDC-P-160',name:'Midhun Michael Michael Poulose',shortName:'M. Poulose',rig:'Rig 117',role:'HSE Advisor'},
-  {id:'BHDC-P-205',name:'Jigneshkumar Natvarlal Patel',shortName:'J. Patel',rig:'Rig 118',role:'HSE Advisor'},
-  {id:'BHDC-P-206',name:'Meiyappan Muthuramalingam Muthuramalingam',shortName:'M. Muthuramalingam',rig:'Rig 118',role:'HSE Advisor'},
-  {id:'BHDC-P-207',name:'Pankaj Dalpatbhai Maganbhai Nayee',shortName:'P. Nayee',rig:'Rig 118',role:'HSE Advisor'},
-  {id:'BHDC-P-208',name:'Vikash Shukla',shortName:'V. Shukla',rig:'Rig 118',role:'HSE Advisor'},
+  {id:'BHDC-P-035',name:'Aakash Hassan',shortName:'A. Hassan',rig:'Rig 67',role:'HSE Advisor'},
+  {id:'BHDC-P-036',name:'Abderrahmane Bekkar',shortName:'A. Bekkar',rig:'Rig 67',role:'HSE Advisor'},
+  {id:'BHDC-P-037',name:'Hassan Abbas',shortName:'H. Abbas',rig:'Rig 67',role:'HSE Advisor'},
+  {id:'BHDC-P-038',name:'Muhammad Sami Waqas Malik Haq',shortName:'M. Haq',rig:'Rig 67',role:'HSE Advisor'},
+  {id:'BHDC-P-039',name:'Ramesh Durai',shortName:'R. Durai',rig:'Rig 67',role:'HSE Advisor'},
+  {id:'BHDC-P-040',name:'Tayyab Ali Muhammad Hayat',shortName:'T. Hayat',rig:'Rig 67',role:'HSE Advisor'},
+  {id:'BHDC-P-091',name:'Amjad Hussain',shortName:'A. Hussain',rig:'Rig 68',role:'HSE Advisor'},
+  {id:'BHDC-P-092',name:'Asmat Nawaz',shortName:'A. Nawaz',rig:'Rig 68',role:'HSE Advisor'},
+  {id:'BHDC-P-145',name:'Ali Raza Muhammad Amin',shortName:'A. Amin',rig:'Rig 117',role:'HSE Advisor'},
+  {id:'BHDC-P-146',name:'Hamza Feguiri',shortName:'H. Feguiri',rig:'Rig 117',role:'HSE Advisor'},
+  {id:'BHDC-P-147',name:'Karunesh Kumar Madan Mohan Panday',shortName:'K. Panday',rig:'Rig 117',role:'HSE Advisor'},
+  {id:'BHDC-P-148',name:'Midhun Michael Michael Poulose',shortName:'M. Poulose',rig:'Rig 117',role:'HSE Advisor'},
+  {id:'BHDC-P-193',name:'Jigneshkumar Natvarlal Patel',shortName:'J. Patel',rig:'Rig 118',role:'HSE Advisor'},
+  {id:'BHDC-P-194',name:'Meiyappan Muthuramalingam Muthuramalingam',shortName:'M. Muthuramalingam',rig:'Rig 118',role:'HSE Advisor'},
+  {id:'BHDC-P-195',name:'Pankaj Dalpatbhai Maganbhai Nayee',shortName:'P. Nayee',rig:'Rig 118',role:'HSE Advisor'},
+  {id:'BHDC-P-196',name:'Vikash Shukla',shortName:'V. Shukla',rig:'Rig 118',role:'HSE Advisor'},
   {id:'BHDC-P-HSE-MGR',name:'Jeremy Cosgrove',shortName:'J. Cosgrove',rig:'All',role:'HSE Manager'}
 ];
 
