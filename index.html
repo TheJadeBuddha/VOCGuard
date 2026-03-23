@@ -246,98 +246,107 @@ table.data-table tr:hover td { background: #f8fafd; }
   </div>
   <div id="header-right">
     <div id="hdr-date"></div>
-    <div>v2.1 | 11 Activities | 4 Rigs | <span style="opacity:0.6;font-size:10px">https://thejadebuddha.github.io/VOCGuard/</span></div>
+    <div>v2.1 | 11 Activities | 4 Rigs</div>
   </div>
 </div>
 
 <div id="nav">
-  <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
-  <button class="nav-btn" data-page="assess">✅ New Assessment</button>
-  <button class="nav-btn" data-page="scan">📷 Scan Form</button>
-  <button class="nav-btn" data-page="register">📋 Register</button>
-  <button class="nav-btn" data-page="heatmap">🗺️ Fleet Heat Map</button>
-  <button class="nav-btn" data-page="individual">👤 Individual</button>
-  <button class="nav-btn" data-page="gaps">⚠️ Gap Analysis</button>
-  <button class="nav-btn" data-page="assessors">🔍 Assessor Report</button>
-  <button class="nav-btn" data-page="settings">⚙️ Settings</button>
+  <button class="nav-btn active" data-page="dashboard" data-i18n="nav.dashboard">📊 Dashboard</button>
+  <button class="nav-btn" data-page="assess" data-i18n="nav.newassessment">✅ New Assessment</button>
+  <button class="nav-btn" data-page="scan" data-i18n="nav.scanform">📷 Scan Form</button>
+  <button class="nav-btn" data-page="register" data-i18n="nav.register">📋 Register</button>
+  <button class="nav-btn" data-page="heatmap" data-i18n="nav.heatmap">🗺️ Fleet Heat Map</button>
+  <button class="nav-btn" data-page="individual" data-i18n="nav.individual">👤 Individual</button>
+  <button class="nav-btn" data-page="gaps" data-i18n="nav.gapanalysis">⚠️ Gap Analysis</button>
+  <button class="nav-btn" data-page="assessors" data-i18n="nav.assessorreport">🔍 Assessor Report</button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 10px;border-left:1px solid rgba(255,255,255,0.2)">
+    <label for="lang-select" style="color:rgba(255,255,255,0.75);font-size:12px;white-space:nowrap">Language:</label>
+    <select id="lang-select" style="padding:4px 8px;border-radius:4px;border:1px solid #bbb;background:#fff;color:#333;font-size:12px;cursor:pointer">
+      <option value="en">English</option>
+      <option value="ar">العربية</option>
+      <option value="hi">हिन्दी</option>
+      <option value="zh">中文</option>
+    </select>
+  </div>
+  <button class="nav-btn" data-page="settings" data-i18n="nav.settings">⚙️ Settings</button>
 </div>
 
 <div id="main">
 
 <!-- ═══ DASHBOARD ═══ -->
 <div id="page-dashboard" class="page active">
-  <div class="section-title">📊 VOC Performance Dashboard</div>
+  <div class="section-title" data-i18n="dashboard.title">📊 VOC Performance Dashboard</div>
   <div class="kpi-row" id="kpi-row"></div>
   <div class="grid2 mb16">
-    <div class="card"><h3>Outcomes by Activity</h3><div style="position:relative;height:240px;overflow:hidden"><canvas id="chart-by-activity"></canvas></div></div>
-    <div class="card"><h3>Fleet Overview by Rig</h3><div style="position:relative;height:240px;overflow:hidden"><canvas id="chart-by-rig"></canvas></div></div>
+    <div class="card"><h3 data-i18n="dashboard.outcomesbyactivity">Outcomes by Activity</h3><div style="position:relative;height:240px;overflow:hidden"><canvas id="chart-by-activity"></canvas></div></div>
+    <div class="card"><h3 data-i18n="dashboard.fleetoverviewbyrig">Fleet Overview by Rig</h3><div style="position:relative;height:240px;overflow:hidden"><canvas id="chart-by-rig"></canvas></div></div>
   </div>
   <div class="grid2 mb16">
-    <div class="card"><h3>Monthly Trend — Pass Rate (6 months)</h3><div style="position:relative;height:200px;overflow:hidden"><canvas id="chart-trend-monthly"></canvas></div></div>
-    <div class="card"><h3>Activity Trend (last 30 days vs prior 30 days)</h3><div id="activity-trends-table"><p class="small" style="padding:8px">Loading…</p></div></div>
+    <div class="card"><h3 data-i18n="dashboard.monthlytrendpassrate">Monthly Trend — Pass Rate (6 months)</h3><div style="position:relative;height:200px;overflow:hidden"><canvas id="chart-trend-monthly"></canvas></div></div>
+    <div class="card"><h3 data-i18n="dashboard.activitytrend">Activity Trend (last 30 days vs prior 30 days)</h3><div id="activity-trends-table"><p class="small" style="padding:8px" data-i18n="common.loading">Loading…</p></div></div>
   </div>
   <div class="grid2">
-    <div class="card"><h3>Recent Assessments</h3><div class="tbl-wrap"><table class="data-table" id="recent-table"><thead><tr><th>Date</th><th>Assessee</th><th>Activity</th><th>Rig</th><th>Outcome</th></tr></thead><tbody id="recent-tbody"></tbody></table></div></div>
-    <div class="card"><h3>Development Required — Action Required</h3><div id="dr-list"></div></div>
+    <div class="card"><h3 data-i18n="dashboard.recentassessments">Recent Assessments</h3><div class="tbl-wrap"><table class="data-table" id="recent-table"><thead><tr><th data-i18n="table.date">Date</th><th data-i18n="table.assessee">Assessee</th><th data-i18n="table.activity">Activity</th><th data-i18n="table.rig">Rig</th><th data-i18n="table.outcome">Outcome</th></tr></thead><tbody id="recent-tbody"></tbody></table></div></div>
+    <div class="card"><h3 data-i18n="dashboard.devreqactionreq">Development Required — Action Required</h3><div id="dr-list"></div></div>
   </div>
 </div>
 
 <!-- ═══ NEW ASSESSMENT ═══ -->
 <div id="page-assess" class="page">
-  <div class="section-title">✅ New VOC Assessment</div>
+  <div class="section-title" data-i18n="assess.title">✅ New VOC Assessment</div>
   <div id="assess-step-setup" class="assessment-step active">
     <div class="card" style="max-width:680px">
-      <h3>Assessment Setup</h3>
+      <h3 data-i18n="assess.setup">Assessment Setup</h3>
       <div class="grid2">
         <div class="form-group">
-          <label>Assessor *</label>
+          <label data-i18n="assess.assessor">Assessor *</label>
           <select id="setup-assessor"></select>
         </div>
         <div class="form-group">
-          <label>Assessment Date *</label>
+          <label data-i18n="assess.assessmentdate">Assessment Date *</label>
           <input type="date" id="setup-date">
         </div>
         <div class="form-group">
-          <label>Assessee *</label>
+          <label data-i18n="assess.assessee">Assessee *</label>
           <select id="setup-assessee-select" onchange="onAssesseeSelect(this)">
-            <option value="">Select worker...</option>
+            <option value="" data-i18n="form.selectworker">Select worker...</option>
           </select>
           <input type="hidden" id="setup-assessee-name">
           <input type="hidden" id="setup-emp-id">
         </div>
         <div class="form-group">
-          <label>Rig / Location *</label>
+          <label data-i18n="assess.riglocation">Rig / Location *</label>
           <select id="setup-rig"></select>
         </div>
         <div class="form-group">
-          <label>Role / Trade</label>
+          <label data-i18n="assess.roletrade">Role / Trade</label>
           <input type="text" id="setup-role" placeholder="e.g. Roughneck">
         </div>
       </div>
       <div class="form-group">
-        <label>VOC Activity *</label>
+        <label data-i18n="assess.vocactivity">VOC Activity *</label>
         <select id="setup-activity"></select>
       </div>
       <div class="form-group">
-        <label>Assessment Type</label>
+        <label data-i18n="assess.assessmenttype">Assessment Type</label>
         <select id="setup-type">
-          <option>Initial</option>
-          <option>Routine (Annual)</option>
-          <option>Post-Incident</option>
-          <option>Triggered (Gap Identified)</option>
+          <option data-i18n="assess.type.initial">Initial</option>
+          <option data-i18n="assess.type.routine">Routine (Annual)</option>
+          <option data-i18n="assess.type.postincident">Post-Incident</option>
+          <option data-i18n="assess.type.triggered">Triggered (Gap Identified)</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Fit to Work Clearance Confirmed?</label>
+        <label data-i18n="assess.ftwconfirmed">Fit to Work Clearance Confirmed?</label>
         <select id="setup-ftw">
-          <option value="yes">Yes — FTW confirmed</option>
-          <option value="no">No — NOT confirmed (assessment cannot proceed)</option>
+          <option value="yes" data-i18n="assess.ftw.yes">Yes — FTW confirmed</option>
+          <option value="no" data-i18n="assess.ftw.no">No — NOT confirmed (assessment cannot proceed)</option>
         </select>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;align-items:center">
-        <button class="btn btn-primary" id="btn-start-assess" onclick="startAssessment()">Begin Assessment →</button>
-        <button class="btn btn-outline" onclick="printBlankForm()">🖨️ Print Blank Form</button>
-        <label class="btn btn-outline" style="cursor:pointer;margin:0">📷 Upload Scanned Form
+        <button class="btn btn-primary" id="btn-start-assess" onclick="startAssessment()" data-i18n="assess.beginbtn">Begin Assessment →</button>
+        <button class="btn btn-outline" onclick="printBlankForm()" data-i18n="assess.printblank">🖨️ Print Blank Form</button>
+        <label class="btn btn-outline" style="cursor:pointer;margin:0" data-i18n="assess.uploadscanned">📷 Upload Scanned Form
           <input type="file" accept="image/*" style="display:none" onchange="handleScanUpload(this)">
         </label>
       </div>
@@ -357,25 +366,25 @@ table.data-table tr:hover td { background: #f8fafd; }
   <div id="assess-step-outcome" class="assessment-step">
     <div id="outcome-display"></div>
     <div class="card mt16" style="max-width:680px;display:none" id="coaching-log-card">
-      <h3>📋 Coaching &amp; Feedback Log</h3>
-      <p class="small" style="margin-bottom:12px">Items where coaching was provided during this assessment (score = 1). This log is the formal record of coaching conducted. Required for all CwC outcomes.</p>
+      <h3 data-i18n="assess.coachingfeedbacklog">📋 Coaching &amp; Feedback Log</h3>
+      <p class="small" style="margin-bottom:12px" data-i18n="assess.coachingdesc">Items where coaching was provided during this assessment (score = 1). This log is the formal record of coaching conducted. Required for all CwC outcomes.</p>
       <div id="coaching-log-content"></div>
     </div>
   <div class="card mt16" style="max-width:680px">
-      <h3>Assessor Notes</h3>
+      <h3 data-i18n="assess.assessornotes">Assessor Notes</h3>
       <div class="form-group">
         <textarea id="assess-notes" placeholder="Optional: observation notes, areas coached, context..."></textarea>
       </div>
       <div id="reassess-field" style="display:none">
         <div class="form-group">
-          <label>Reassessment Due Date (Development Required)</label>
+          <label data-i18n="assess.reassessmentduedate">Reassessment Due Date (Development Required)</label>
           <input type="date" id="assess-reassess-date">
         </div>
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <button class="btn btn-outline" onclick="backToScoring()">← Review Scores</button>
-        <button class="btn btn-success" onclick="saveAssessment()">✓ Save to Register</button>
-        <button class="btn btn-outline no-print" onclick="printAssessment()">🖨️ Print PDF</button>
+        <button class="btn btn-outline" onclick="backToScoring()" data-i18n="btn.reviewscores">← Review Scores</button>
+        <button class="btn btn-success" onclick="saveAssessment()" data-i18n="btn.saveregister">✓ Save to Register</button>
+        <button class="btn btn-outline no-print" onclick="printAssessment()" data-i18n="btn.printpdf">🖨️ Print PDF</button>
       </div>
     </div>
   </div>
@@ -383,20 +392,20 @@ table.data-table tr:hover td { background: #f8fafd; }
 
 <!-- ═══ SCAN FORM ═══ -->
 <div id="page-scan" class="page">
-  <div class="section-title">📷 Scan Paper VOC Form</div>
+  <div class="section-title" data-i18n="scan.title">📷 Scan Paper VOC Form</div>
 
   <!-- Step 1: Capture / Upload -->
   <div id="scan-step-capture" class="scan-step active">
     <div class="card" style="max-width:680px">
-      <h3>Step 1 — Capture Completed VOC Form</h3>
-      <p style="font-size:13px;color:#555;margin-bottom:16px">Take a photo of a completed paper VOC form or upload a scan. The QR code printed on the form will auto-fill the assessment metadata.</p>
+      <h3 data-i18n="scan.step1title">Step 1 — Capture Completed VOC Form</h3>
+      <p style="font-size:13px;color:#555;margin-bottom:16px" data-i18n="scan.step1desc">Take a photo of a completed paper VOC form or upload a scan. The QR code printed on the form will auto-fill the assessment metadata.</p>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-        <label class="btn btn-primary" style="cursor:pointer">
+        <label class="btn btn-primary" style="cursor:pointer" data-i18n="scan.takephoto">
           📷 Take Photo
           <input type="file" accept="image/*" capture="environment" id="scan-camera" style="display:none" onchange="handleScanFile(this)">
         </label>
-        <label class="btn btn-outline" style="cursor:pointer">
+        <label class="btn btn-outline" style="cursor:pointer" data-i18n="scan.uploadimage">
           📁 Upload Image
           <input type="file" accept="image/*" id="scan-upload" style="display:none" onchange="handleScanFile(this)">
         </label>
@@ -408,36 +417,36 @@ table.data-table tr:hover td { background: #f8fafd; }
       </div>
 
       <div id="scan-metadata" style="display:none">
-        <h3 style="margin-top:16px">QR Code Data Extracted</h3>
+        <h3 style="margin-top:16px" data-i18n="scan.qrcodeextracted">QR Code Data Extracted</h3>
         <table class="data-table" style="max-width:500px;margin-bottom:16px" id="scan-meta-table"></table>
         <div style="display:flex;gap:10px">
-          <button class="btn btn-success" onclick="scanProceedToScores()">Proceed to Score Entry</button>
-          <button class="btn btn-outline" onclick="scanReset()">Reset</button>
+          <button class="btn btn-success" onclick="scanProceedToScores()" data-i18n="scan.proceeddtoscores">Proceed to Score Entry</button>
+          <button class="btn btn-outline" onclick="scanReset()" data-i18n="btn.reset">Reset</button>
         </div>
       </div>
 
       <div id="scan-no-qr" style="display:none;margin-top:16px">
-        <h3>No QR Code Found — Manual Entry</h3>
-        <p class="small" style="margin-bottom:12px">The QR code could not be read. Fill in the metadata manually, then proceed to enter scores.</p>
+        <h3 data-i18n="scan.noqrfound">No QR Code Found — Manual Entry</h3>
+        <p class="small" style="margin-bottom:12px" data-i18n="scan.noqrdesc">The QR code could not be read. Fill in the metadata manually, then proceed to enter scores.</p>
         <div class="grid2" style="max-width:600px">
           <div class="form-group">
-            <label>Assessor *</label>
+            <label data-i18n="assess.assessor">Assessor *</label>
             <select id="scan-assessor"></select>
           </div>
           <div class="form-group">
-            <label>Date *</label>
+            <label data-i18n="table.date">Date *</label>
             <input type="date" id="scan-date">
           </div>
           <div class="form-group">
-            <label>Assessee *</label>
+            <label data-i18n="assess.assessee">Assessee *</label>
             <select id="scan-assessee" onchange="onScanAssesseeSelect(this)">
-              <option value="">Select worker...</option>
+              <option value="" data-i18n="form.selectworker">Select worker...</option>
             </select>
             <input type="hidden" id="scan-assessee-name">
             <input type="hidden" id="scan-emp-id">
           </div>
           <div class="form-group">
-            <label>Rig *</label>
+            <label data-i18n="table.rig">Rig *</label>
             <select id="scan-rig">
               <option value="">Select rig...</option>
               <option value="Rig 67">Rig 67</option>
@@ -447,15 +456,15 @@ table.data-table tr:hover td { background: #f8fafd; }
             </select>
           </div>
           <div class="form-group">
-            <label>Role</label>
+            <label data-i18n="assess.roletrade">Role</label>
             <input type="text" id="scan-role" placeholder="e.g. Floorman">
           </div>
           <div class="form-group">
-            <label>Activity *</label>
+            <label data-i18n="table.activity">Activity *</label>
             <select id="scan-activity"></select>
           </div>
         </div>
-        <button class="btn btn-success" onclick="scanProceedManual()" style="margin-top:8px">Proceed to Score Entry</button>
+        <button class="btn btn-success" onclick="scanProceedManual()" style="margin-top:8px" data-i18n="scan.proceeddtoscores">Proceed to Score Entry</button>
       </div>
     </div>
   </div>
@@ -463,13 +472,13 @@ table.data-table tr:hover td { background: #f8fafd; }
   <!-- Step 2: Quick Score Entry -->
   <div id="scan-step-scores" class="scan-step" style="display:none">
     <div class="card" style="max-width:800px">
-      <h3>Step 2 — Enter Scores from Paper Form</h3>
-      <p class="small" style="margin-bottom:12px">Tap 0 / 1 / 2 for each item, reading from the completed paper form. Critical items are highlighted in red.</p>
+      <h3 data-i18n="scan.step2title">Step 2 — Enter Scores from Paper Form</h3>
+      <p class="small" style="margin-bottom:12px" data-i18n="scan.step2desc">Tap 0 / 1 / 2 for each item, reading from the completed paper form. Critical items are highlighted in red.</p>
       <div id="scan-meta-summary" style="background:var(--bhdc-light);padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:16px"></div>
       <div id="scan-score-grid"></div>
       <div style="margin-top:16px;display:flex;gap:10px">
-        <button class="btn btn-outline" onclick="scanBackToCapture()">Back</button>
-        <button class="btn btn-primary" onclick="scanReviewOutcome()">Review & Save</button>
+        <button class="btn btn-outline" onclick="scanBackToCapture()" data-i18n="btn.back">Back</button>
+        <button class="btn btn-primary" onclick="scanReviewOutcome()" data-i18n="scan.reviewsave">Review & Save</button>
       </div>
     </div>
   </div>
@@ -477,19 +486,19 @@ table.data-table tr:hover td { background: #f8fafd; }
   <!-- Step 3: Review & Save -->
   <div id="scan-step-review" class="scan-step" style="display:none">
     <div class="card" style="max-width:680px">
-      <h3>Step 3 — Review & Save</h3>
+      <h3 data-i18n="scan.step3title">Step 3 — Review & Save</h3>
       <div id="scan-outcome-banner"></div>
       <div class="form-group" style="margin-top:16px">
-        <label>Additional Notes</label>
+        <label data-i18n="form.additionalnotes">Additional Notes</label>
         <textarea id="scan-notes" placeholder="Optional notes..."></textarea>
       </div>
       <div id="scan-reassess-wrap" style="display:none" class="form-group">
-        <label>Reassessment Due Date *</label>
+        <label data-i18n="assess.reassessmentduedate">Reassessment Due Date *</label>
         <input type="date" id="scan-reassess-date">
       </div>
       <div style="display:flex;gap:10px;margin-top:12px">
-        <button class="btn btn-outline" onclick="scanBackToScores()">Back to Scores</button>
-        <button class="btn btn-success" onclick="scanSaveAssessment()">Save Assessment</button>
+        <button class="btn btn-outline" onclick="scanBackToScores()" data-i18n="scan.backtoscores">Back to Scores</button>
+        <button class="btn btn-success" onclick="scanSaveAssessment()" data-i18n="btn.saveassessment">Save Assessment</button>
       </div>
     </div>
   </div>
@@ -497,23 +506,23 @@ table.data-table tr:hover td { background: #f8fafd; }
 
 <!-- ═══ REGISTER ═══ -->
 <div id="page-register" class="page">
-  <div class="section-title">📋 VOC Assessment Register</div>
+  <div class="section-title" data-i18n="register.title">📋 VOC Assessment Register</div>
   <div class="filter-bar">
-    <select id="reg-filter-rig"><option value="">All Rigs</option></select>
-    <select id="reg-filter-activity"><option value="">All Activities</option></select>
-    <select id="reg-filter-outcome"><option value="">All Outcomes</option><option>Verified Competent</option><option>Competent with Coaching</option><option>Development Required</option></select>
-    <select id="reg-filter-assessor"><option value="">All Assessors</option></select>
+    <select id="reg-filter-rig"><option value="" data-i18n="filter.allrigs">All Rigs</option></select>
+    <select id="reg-filter-activity"><option value="" data-i18n="filter.allactivities">All Activities</option></select>
+    <select id="reg-filter-outcome"><option value="" data-i18n="filter.alloutcomes">All Outcomes</option><option>Verified Competent</option><option>Competent with Coaching</option><option>Development Required</option></select>
+    <select id="reg-filter-assessor"><option value="" data-i18n="filter.allassessors">All Assessors</option></select>
     <input type="text" id="reg-filter-name" placeholder="Search name..." style="min-width:160px">
-    <button class="btn btn-outline btn-sm" onclick="clearRegFilters()">Clear</button>
-    <button class="btn btn-primary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="btn btn-outline btn-sm" onclick="clearRegFilters()" data-i18n="btn.clear">Clear</button>
+    <button class="btn btn-primary btn-sm" onclick="exportCSV()" data-i18n="register.exportcsv">⬇ Export CSV</button>
     <span id="reg-count" class="small"></span>
   </div>
   <div class="card">
     <div class="tbl-wrap">
       <table class="data-table" id="register-table">
         <thead><tr>
-          <th>ID</th><th>Date</th><th>Assessee</th><th>Role</th><th>Rig</th>
-          <th>Activity</th><th>Type</th><th>Assessor</th><th>Outcome</th><th>Reassess By</th>
+          <th data-i18n="register.id">ID</th><th data-i18n="table.date">Date</th><th data-i18n="table.assessee">Assessee</th><th data-i18n="register.role">Role</th><th data-i18n="table.rig">Rig</th>
+          <th data-i18n="table.activity">Activity</th><th data-i18n="register.type">Type</th><th data-i18n="register.assessor">Assessor</th><th data-i18n="table.outcome">Outcome</th><th data-i18n="register.reassessBy">Reassess By</th>
         </tr></thead>
         <tbody id="register-tbody"></tbody>
       </table>
@@ -523,29 +532,29 @@ table.data-table tr:hover td { background: #f8fafd; }
 
 <!-- ═══ FLEET HEAT MAP ═══ -->
 <div id="page-heatmap" class="page">
-  <div class="section-title">🗺️ Fleet Competency Heat Map</div>
+  <div class="section-title" data-i18n="heatmap.title">🗺️ Fleet Competency Heat Map</div>
   <div class="filter-bar">
-    <label>View:</label>
+    <label data-i18n="filter.view">View:</label>
     <select id="hm-view" onchange="renderHeatMap()">
-      <option value="stacked">Stacked (VC / CwC / DR)</option>
-      <option value="vc-pct">% Verified Competent only</option>
+      <option value="stacked" data-i18n="heatmap.stacked">Stacked (VC / CwC / DR)</option>
+      <option value="vc-pct" data-i18n="heatmap.vcpct">% Verified Competent only</option>
     </select>
   </div>
   <div class="card mb16">
-    <h3>Outcomes by Rig × Activity (stacked bar)</h3><div style="position:relative;height:320px;overflow:hidden"><canvas id="chart-heatmap"></canvas></div>
+    <h3 data-i18n="heatmap.outcomesbyrxactivity">Outcomes by Rig × Activity (stacked bar)</h3><div style="position:relative;height:320px;overflow:hidden"><canvas id="chart-heatmap"></canvas></div>
   </div>
   <div class="grid2">
     <div class="card">
-      <h3>Rig Performance Summary</h3>
+      <h3 data-i18n="heatmap.rigperfsummary">Rig Performance Summary</h3>
       <table class="data-table" id="rig-summary-table">
-        <thead><tr><th>Rig</th><th>Total</th><th>VC %</th><th>CwC %</th><th>DR %</th><th>At Risk</th></tr></thead>
+        <thead><tr><th data-i18n="table.rig">Rig</th><th data-i18n="heatmap.total">Total</th><th data-i18n="heatmap.vcpct2">VC %</th><th data-i18n="heatmap.cwcpct">CwC %</th><th data-i18n="heatmap.drpct">DR %</th><th data-i18n="heatmap.atrisk">At Risk</th></tr></thead>
         <tbody id="rig-summary-tbody"></tbody>
       </table>
     </div>
     <div class="card">
-      <h3>Activity Risk Ranking (Highest DR %)</h3>
+      <h3 data-i18n="heatmap.activityrisk">Activity Risk Ranking (Highest DR %)</h3>
       <table class="data-table" id="activity-risk-table">
-        <thead><tr><th>#</th><th>Activity</th><th>DR %</th><th>CwC %</th><th>Total</th></tr></thead>
+        <thead><tr><th>#</th><th data-i18n="table.activity">Activity</th><th data-i18n="heatmap.drpct">DR %</th><th data-i18n="heatmap.cwcpct">CwC %</th><th data-i18n="heatmap.total">Total</th></tr></thead>
         <tbody id="activity-risk-tbody"></tbody>
       </table>
     </div>
@@ -554,46 +563,55 @@ table.data-table tr:hover td { background: #f8fafd; }
 
 <!-- ═══ INDIVIDUAL ═══ -->
 <div id="page-individual" class="page">
-  <div class="section-title">👤 Individual Competency Profile</div>
+  <div class="section-title" data-i18n="individual.title">👤 Individual Competency Profile</div>
   <div class="filter-bar">
     <input type="text" id="ind-search" placeholder="Search by name or employee ID..." style="min-width:260px" oninput="searchIndividual()">
-    <select id="ind-rig-filter" onchange="searchIndividual()"><option value="">All Rigs</option></select>
+    <select id="ind-rig-filter" onchange="searchIndividual()"><option value="" data-i18n="filter.allrigs">All Rigs</option></select>
   </div>
   <div id="ind-results"></div>
   <div id="ind-profile" style="display:none">
     <div class="grid2 mb16">
       <div class="card" id="ind-profile-card"></div>
       <div class="card">
-        <h3>Competency Status — All Activities</h3>
+        <h3 data-i18n="individual.compstatusallactivities">Competency Status — All Activities</h3>
         <div id="ind-activity-list"></div>
       </div>
     </div>
-    <div class="card"><h3>Assessment History</h3><div class="tbl-wrap"><table class="data-table" id="ind-history-table"><thead><tr><th>Date</th><th>Activity</th><th>Assessor</th><th>Outcome</th><th>Type</th></tr></thead><tbody id="ind-history-tbody"></tbody></table></div></div>
+    <div class="card"><h3 data-i18n="individual.assessmenthistory">Assessment History</h3><div class="tbl-wrap"><table class="data-table" id="ind-history-table"><thead><tr><th data-i18n="table.date">Date</th><th data-i18n="table.activity">Activity</th><th data-i18n="register.assessor">Assessor</th><th data-i18n="table.outcome">Outcome</th><th data-i18n="register.type">Type</th></tr></thead><tbody id="ind-history-tbody"></tbody></table></div></div>
   </div>
   <div id="ind-search-results-list"></div>
 </div>
 
 <!-- ═══ GAP ANALYSIS ═══ -->
 <div id="page-gaps" class="page">
-  <div class="section-title">⚠️ Gap Analysis</div>
+  <div class="section-title" data-i18n="gaps.title">⚠️ Gap Analysis</div>
+  <div style="margin-bottom:12px">
+    <select id="gap-rig-filter" onchange="renderGaps()" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);font-size:13px">
+      <option value="all" data-i18n="gaps.allrigsfleet">All Rigs (Fleet)</option>
+      <option value="Rig 67">Rig 67</option>
+      <option value="Rig 68">Rig 68</option>
+      <option value="Rig 117">Rig 117</option>
+      <option value="Rig 118">Rig 118</option>
+    </select>
+  </div>
   <div class="kpi-row" id="gap-kpi-row"></div>
   <div class="grid2 mb16">
     <div class="card">
-      <h3>🔴 Development Required — Pending Reassessment</h3>
+      <h3 data-i18n="gaps.devreqpending">🔴 Development Required — Pending Reassessment</h3>
       <div id="gap-dr-list"></div>
     </div>
     <div class="card">
-      <h3>📅 Overdue Reassessments</h3>
+      <h3 data-i18n="gaps.overduereas">📅 Overdue Reassessments</h3>
       <div id="gap-overdue-list"></div>
     </div>
   </div>
   <div class="grid2">
     <div class="card">
-      <h3>High-Risk Activities (by DR Rate)</h3>
+      <h3 data-i18n="gaps.highriskactivities">High-Risk Activities (by DR Rate)</h3>
       <div id="gap-activity-risk"></div>
     </div>
     <div class="card">
-      <h3>Rigs with Outstanding Gaps</h3>
+      <h3 data-i18n="gaps.rigsoutstandinggaps">Rigs with Outstanding Gaps</h3>
       <div id="gap-rig-risk"></div>
     </div>
   </div>
@@ -601,17 +619,17 @@ table.data-table tr:hover td { background: #f8fafd; }
 
 <!-- ═══ ASSESSOR REPORT ═══ -->
 <div id="page-assessors" class="page">
-  <div class="section-title">🔍 Assessor Quality & Calibration Report</div>
+  <div class="section-title" data-i18n="assessors.title">🔍 Assessor Quality & Calibration Report</div>
   <div class="card mb16">
-    <h3>Understanding This Report</h3>
-    <p style="font-size:12px;color:#555;line-height:1.6">
+    <h3 data-i18n="assessors.understandingreport">Understanding This Report</h3>
+    <p style="font-size:12px;color:#555;line-height:1.6" data-i18n="assessors.reportdesc">
       This report analyses assessor performance to identify calibration issues, inconsistencies, and quality concerns.
       <strong>Rubber-stamping</strong> is flagged when an assessor's average score is significantly higher than the fleet mean, suggesting insufficient rigour.
       <strong>Calibration Index</strong> compares each assessor's score distributions against the fleet average for the same activities — a high index suggests over-lenient or over-strict scoring.
     </p>
   </div>
   <div class="card mb16">
-    <h3>Fleet-Level Score Distribution</h3><div style="position:relative;height:220px;overflow:hidden"><canvas id="chart-score-dist"></canvas></div>
+    <h3 data-i18n="assessors.fleetlevelscores">Fleet-Level Score Distribution</h3><div style="position:relative;height:220px;overflow:hidden"><canvas id="chart-score-dist"></canvas></div>
   </div>
   <div id="assessor-grid-container" class="assessor-grid"></div>
 </div>
@@ -619,43 +637,43 @@ table.data-table tr:hover td { background: #f8fafd; }
 
 <!-- ═══ SETTINGS ═══ -->
 <div id="page-settings" class="page">
-  <div class="section-title">⚙️ Settings &amp; Configuration</div>
+  <div class="section-title" data-i18n="settings.title">⚙️ Settings &amp; Configuration</div>
   <div class="settings-section">
-    <h3>📊 Google Sheets Integration</h3>
-    <p style="font-size:13px;color:#555;margin-bottom:14px">Connect to a Google Apps Script web app to automatically sync every saved assessment to Google Sheets for trending, reporting, and offline backup.</p>
+    <h3 data-i18n="settings.gsintegration">📊 Google Sheets Integration</h3>
+    <p style="font-size:13px;color:#555;margin-bottom:14px" data-i18n="settings.gsdesc">Connect to a Google Apps Script web app to automatically sync every saved assessment to Google Sheets for trending, reporting, and offline backup.</p>
     <div class="form-group" style="max-width:560px">
-      <label>Google Apps Script Web App URL</label>
+      <label data-i18n="settings.gsurl">Google Apps Script Web App URL</label>
       <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/AKfyc..." style="font-size:12px">
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <button class="btn btn-primary btn-sm" onclick="saveGSUrl()">Save URL</button>
-      <button class="btn btn-outline btn-sm" onclick="testGSConnection()">Test Connection</button>
+      <button class="btn btn-primary btn-sm" onclick="saveGSUrl()" data-i18n="settings.saveurl">Save URL</button>
+      <button class="btn btn-outline btn-sm" onclick="testGSConnection()" data-i18n="settings.testconnection">Test Connection</button>
       <span id="gs-status" class="small" style="color:#888"></span>
     </div>
     <div style="margin-top:16px;padding:14px;background:#f4f6f9;border-radius:6px;font-size:12px;line-height:2">
-      <strong>Setup Instructions:</strong><br>
+      <strong data-i18n="settings.setupinstructions">Setup Instructions:</strong><br>
       1. Open <a href="https://script.google.com" target="_blank" style="color:var(--bhdc-mid)">script.google.com</a> — create a new project named "VOCGuard".<br>
       2. Download the Apps Script code using the button below and paste it into the script editor (Code.gs).<br>
       3. Click <strong>Deploy → New Deployment → Web App</strong>. Execute as: Me. Who has access: Anyone.<br>
       4. Authorise the permissions, then copy the deployment URL and paste it above.<br>
       5. Click Test Connection — if successful you'll see a green confirmation.<br>
       <br>
-      <button class="btn btn-outline btn-sm" onclick="downloadAppScript()">⬇ Download Apps Script (.gs)</button>
+      <button class="btn btn-outline btn-sm" onclick="downloadAppScript()" data-i18n="settings.downloadappscript">⬇ Download Apps Script (.gs)</button>
     </div>
   </div>
   <div class="settings-section">
-    <h3>🖥️ Display Settings</h3>
+    <h3 data-i18n="settings.displaysettings">🖥️ Display Settings</h3>
     <div class="form-group" style="max-width:320px">
-      <label>Demo Data Mode</label>
+      <label data-i18n="settings.demodatamode">Demo Data Mode</label>
       <select id="demo-toggle" onchange="toggleDemo()">
-        <option value="on">Demo data ON (testing / review mode)</option>
-        <option value="off">Demo data OFF (live assessments only)</option>
+        <option value="on" data-i18n="settings.demodataon">Demo data ON (testing / review mode)</option>
+        <option value="off" data-i18n="settings.demodataoff">Demo data OFF (live assessments only)</option>
       </select>
     </div>
-    <p class="small" style="margin-top:6px">Switch off demo data when you're ready to use VOCGuard for live assessments. The register will show only real saved assessments.</p>
+    <p class="small" style="margin-top:6px" data-i18n="settings.demodesc">Switch off demo data when you're ready to use VOCGuard for live assessments. The register will show only real saved assessments.</p>
   </div>
   <div class="settings-section">
-    <h3>ℹ️ About VOCGuard</h3>
+    <h3 data-i18n="settings.about">ℹ️ About VOCGuard</h3>
     <table class="data-table" style="max-width:440px">
       <tr><td style="font-weight:600;padding:6px 12px;width:160px">Version</td><td style="padding:6px 12px">2.1 — March 2026</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">System</td><td style="padding:6px 12px">BHDC HSE Management System</td></tr>
@@ -663,7 +681,6 @@ table.data-table tr:hover td { background: #f8fafd; }
       <tr><td style="font-weight:600;padding:6px 12px">VOC Activities</td><td style="padding:6px 12px">11 (CHK-001 to CHK-011)</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">Assessors</td><td style="padding:6px 12px">17 (6 × Rig 67, 2 × Rig 68, 4 × Rig 117, 4 × Rig 118, HSE Mgr)</td></tr>
       <tr><td style="font-weight:600;padding:6px 12px">New in v2.1</td><td style="padding:6px 12px">Paper form scan (QR + score entry), per-trainee CAMS folder filing, backend v3.2</td></tr>
-      <tr><td style="font-weight:600;padding:6px 12px">Live URL</td><td style="padding:6px 12px"><a href="https://thejadebuddha.github.io/VOCGuard/" target="_blank" style="color:#2E6DA4">https://thejadebuddha.github.io/VOCGuard/</a></td></tr>
     </table>
   </div>
 </div>
@@ -1263,10 +1280,10 @@ function renderHeatMap() {
   const actLabels = ACTIVITIES.map(a => a.name.split(' ').slice(0,3).join(' '));
   const datasets = [];
   const colors = {
-    'Rig 67': {vc:'rgba(39,174,96,0.85)',cwc:'rgba(230,126,34,0.85)',dr:'rgba(192,57,43,0.85)'},
-    'Rig 68': {vc:'rgba(39,174,96,0.7)',cwc:'rgba(230,126,34,0.7)',dr:'rgba(192,57,43,0.7)'},
-    'Rig 117':{vc:'rgba(39,174,96,0.55)',cwc:'rgba(230,126,34,0.55)',dr:'rgba(192,57,43,0.55)'},
-    'Rig 118':{vc:'rgba(39,174,96,0.4)',cwc:'rgba(230,126,34,0.4)',dr:'rgba(192,57,43,0.4)'},
+    'Rig 67': {vc:'#1a5276',cwc:'#2e86c1',dr:'#85c1e9'},
+    'Rig 68': {vc:'#7d3c98',cwc:'#a569bd',dr:'#d2b4de'},
+    'Rig 117':{vc:'#b9770e',cwc:'#d4ac0d',dr:'#f9e79f'},
+    'Rig 118':{vc:'#1e8449',cwc:'#27ae60',dr:'#82e0aa'},
   };
 
   // Build grouped stacked data per rig per activity
@@ -1297,10 +1314,10 @@ function renderHeatMap() {
   } else {
     // Stacked %: each rig stacked to 100%, showing VC/CwC/DR split
     const rigColors = {
-      'Rig 67':  {vc:'#27ae60',cwc:'#e67e22',dr:'#c0392b'},
-      'Rig 68':  {vc:'#52be80',cwc:'#e59866',dr:'#cd6155'},
-      'Rig 117': {vc:'#82e0aa',cwc:'#f0b27a',dr:'#d98880'},
-      'Rig 118': {vc:'#a9dfbf',cwc:'#f8c471',dr:'#e8a89c'},
+      'Rig 67':  {vc:'#1a5276',cwc:'#2e86c1',dr:'#85c1e9'},
+      'Rig 68':  {vc:'#7d3c98',cwc:'#a569bd',dr:'#d2b4de'},
+      'Rig 117': {vc:'#b9770e',cwc:'#d4ac0d',dr:'#f9e79f'},
+      'Rig 118': {vc:'#1e8449',cwc:'#27ae60',dr:'#82e0aa'},
     };
     const dsVC  = RIGS.map(rig => ({label:rig+' VC%',  data:ACTIVITIES.map(act=>{const d=REGISTER.filter(a=>a.rig===rig&&a.activityId===act.id);return d.length?Math.round(d.filter(a=>a.outcome==='Verified Competent').length/d.length*100):0;}), backgroundColor:rigColors[rig].vc,  stack:rig}));
     const dsCWC = RIGS.map(rig => ({label:rig+' CwC%', data:ACTIVITIES.map(act=>{const d=REGISTER.filter(a=>a.rig===rig&&a.activityId===act.id);return d.length?Math.round(d.filter(a=>a.outcome==='Competent with Coaching').length/d.length*100):0;}),   backgroundColor:rigColors[rig].cwc, stack:rig}));
@@ -1313,7 +1330,7 @@ function renderHeatMap() {
       options:{
         animation:false, responsive:true, maintainAspectRatio:false,
         plugins:{
-          legend:{display:false},
+          legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:12,padding:8,filter:item=>item.text.includes('VC%')}},
           tooltip:{callbacks:{
             title:ctx=>ACTIVITIES[ctx[0].dataIndex]?.name||ctx[0].label,
             label:ctx=>`${ctx.dataset.label}: ${ctx.raw}%`
@@ -1479,7 +1496,9 @@ function showIndividualProfile(name, empId) {
 // GAP ANALYSIS
 // ════════════════════════════════════════════════════════════════════════════
 function renderGaps() {
-  const dr = REGISTER.filter(a => a.outcome === 'Development Required');
+  const rigFilter = document.getElementById('gap-rig-filter').value;
+  const base = rigFilter === 'all' ? REGISTER : REGISTER.filter(a => a.rig === rigFilter);
+  const dr = base.filter(a => a.outcome === 'Development Required');
   const overdue = dr.filter(a => a.reassessmentDue && a.reassessmentDue < todayStr());
   const uniqueDR = [...new Map(dr.map(a=>[a.assesseeName+a.activityId, a])).values()];
   const needsAction = uniqueDR.filter(a => a.reassessmentDue && a.reassessmentDue > todayStr());
@@ -1519,7 +1538,7 @@ function renderGaps() {
 
   // Activity risk
   const actRisk = ACTIVITIES.map(act => {
-    const d = REGISTER.filter(a => a.activityId === act.id);
+    const d = base.filter(a => a.activityId === act.id);
     const drCount = d.filter(a=>a.outcome==='Development Required').length;
     return {name:act.name, drPct: d.length ? drCount/d.length : 0, count: drCount, total: d.length};
   }).sort((a,b) => b.drPct - a.drPct);
@@ -1537,7 +1556,7 @@ function renderGaps() {
   }).join('');
 
   // Rig risk
-  const rigRisk = RIGS.map(rig => {
+  const rigRisk = (rigFilter === 'all' ? RIGS : [rigFilter]).map(rig => {
     const d = REGISTER.filter(a => a.rig === rig);
     const drCount = d.filter(a=>a.outcome==='Development Required').length;
     const overdueCount = d.filter(a=>a.reassessmentDue && a.reassessmentDue < todayStr() && a.outcome==='Development Required').length;
@@ -1944,6 +1963,665 @@ function destroyChart(id) {
 // ════════════════════════════════════════════════════════════════════════════
 const SETTINGS = { gsUrl: 'https://script.google.com/macros/s/AKfycbzucMOE2Rd_Ds58j_klDGJI-5gS68YtzHcn87rxkZlLmrINZ_pHLamYc0G1dhd48nHIgQ/exec', demoMode: true };
 
+// ════════════════════════════════════════════════════════════════════════════
+// MULTI-LANGUAGE SUPPORT
+// ════════════════════════════════════════════════════════════════════════════
+let currentLanguage = 'en';
+
+const TRANSLATIONS = {
+  en: {
+    nav: {
+      dashboard: 'Dashboard',
+      newassessment: 'New Assessment',
+      scanform: 'Scan Form',
+      register: 'Register',
+      heatmap: 'Fleet Heat Map',
+      individual: 'Individual',
+      gapanalysis: 'Gap Analysis',
+      assessorreport: 'Assessor Report',
+      settings: 'Settings'
+    },
+    dashboard: {
+      title: 'VOC Performance Dashboard',
+      outcomesbyactivity: 'Outcomes by Activity',
+      fleetoverviewbyrig: 'Fleet Overview by Rig',
+      monthlytrendpassrate: 'Monthly Trend — Pass Rate (6 months)',
+      activitytrend: 'Activity Trend (last 30 days vs prior 30 days)',
+      recentassessments: 'Recent Assessments',
+      devreqactionreq: 'Development Required — Action Required'
+    },
+    assess: {
+      title: 'New VOC Assessment',
+      setup: 'Assessment Setup',
+      assessor: 'Assessor *',
+      assessmentdate: 'Assessment Date *',
+      assessee: 'Assessee *',
+      riglocation: 'Rig / Location *',
+      roletrade: 'Role / Trade',
+      vocactivity: 'VOC Activity *',
+      assessmenttype: 'Assessment Type',
+      type: {
+        initial: 'Initial',
+        routine: 'Routine (Annual)',
+        postincident: 'Post-Incident',
+        triggered: 'Triggered (Gap Identified)'
+      },
+      ftwconfirmed: 'Fit to Work Clearance Confirmed?',
+      ftw: {
+        yes: 'Yes — FTW confirmed',
+        no: 'No — NOT confirmed (assessment cannot proceed)'
+      },
+      beginbtn: 'Begin Assessment →',
+      printblank: 'Print Blank Form',
+      uploadscanned: 'Upload Scanned Form',
+      coachingfeedbacklog: 'Coaching & Feedback Log',
+      coachingdesc: 'Items where coaching was provided during this assessment (score = 1). This log is the formal record of coaching conducted. Required for all CwC outcomes.',
+      assessornotes: 'Assessor Notes',
+      reassessmentduedate: 'Reassessment Due Date (Development Required)'
+    },
+    scan: {
+      title: 'Scan Paper VOC Form',
+      step1title: 'Step 1 — Capture Completed VOC Form',
+      step1desc: 'Take a photo of a completed paper VOC form or upload a scan. The QR code printed on the form will auto-fill the assessment metadata.',
+      takephoto: 'Take Photo',
+      uploadimage: 'Upload Image',
+      qrcodeextracted: 'QR Code Data Extracted',
+      proceeddtoscores: 'Proceed to Score Entry',
+      noqrfound: 'No QR Code Found — Manual Entry',
+      noqrdesc: 'The QR code could not be read. Fill in the metadata manually, then proceed to enter scores.',
+      step2title: 'Step 2 — Enter Scores from Paper Form',
+      step2desc: 'Tap 0 / 1 / 2 for each item, reading from the completed paper form. Critical items are highlighted in red.',
+      reviewsave: 'Review & Save',
+      step3title: 'Step 3 — Review & Save',
+      backtoscores: 'Back to Scores'
+    },
+    table: {
+      date: 'Date',
+      assessee: 'Assessee',
+      activity: 'Activity',
+      rig: 'Rig',
+      outcome: 'Outcome'
+    },
+    form: {
+      selectworker: 'Select worker...',
+      additionalnotes: 'Additional Notes'
+    },
+    btn: {
+      reviewscores: 'Review Scores',
+      saveregister: 'Save to Register',
+      printpdf: 'Print PDF',
+      reset: 'Reset',
+      back: 'Back',
+      saveassessment: 'Save Assessment',
+      clear: 'Clear'
+    },
+    register: {
+      title: 'VOC Assessment Register',
+      exportcsv: 'Export CSV',
+      id: 'ID',
+      role: 'Role',
+      type: 'Type',
+      assessor: 'Assessor',
+      reassessBy: 'Reassess By'
+    },
+    filter: {
+      allrigs: 'All Rigs',
+      allactivities: 'All Activities',
+      alloutcomes: 'All Outcomes',
+      allassessors: 'All Assessors',
+      view: 'View:'
+    },
+    heatmap: {
+      title: 'Fleet Competency Heat Map',
+      stacked: 'Stacked (VC / CwC / DR)',
+      vcpct: '% Verified Competent only',
+      vcpct2: 'VC %',
+      cwcpct: 'CwC %',
+      drpct: 'DR %',
+      outcomesbyrxactivity: 'Outcomes by Rig × Activity (stacked bar)',
+      rigperfsummary: 'Rig Performance Summary',
+      total: 'Total',
+      atrisk: 'At Risk',
+      activityrisk: 'Activity Risk Ranking (Highest DR %)'
+    },
+    individual: {
+      title: 'Individual Competency Profile',
+      compstatusallactivities: 'Competency Status — All Activities',
+      assessmenthistory: 'Assessment History'
+    },
+    gaps: {
+      title: 'Gap Analysis',
+      allrigsfleet: 'All Rigs (Fleet)',
+      devreqpending: 'Development Required — Pending Reassessment',
+      overduereas: 'Overdue Reassessments',
+      highriskactivities: 'High-Risk Activities (by DR Rate)',
+      rigsoutstandinggaps: 'Rigs with Outstanding Gaps'
+    },
+    assessors: {
+      title: 'Assessor Quality & Calibration Report',
+      understandingreport: 'Understanding This Report',
+      reportdesc: 'This report analyses assessor performance to identify calibration issues, inconsistencies, and quality concerns. Rubber-stamping is flagged when an assessor\'s average score is significantly higher than the fleet mean, suggesting insufficient rigour. Calibration Index compares each assessor\'s score distributions against the fleet average for the same activities — a high index suggests over-lenient or over-strict scoring.',
+      fleetlevelscores: 'Fleet-Level Score Distribution'
+    },
+    settings: {
+      title: 'Settings & Configuration',
+      gsintegration: 'Google Sheets Integration',
+      gsdesc: 'Connect to a Google Apps Script web app to automatically sync every saved assessment to Google Sheets for trending, reporting, and offline backup.',
+      gsurl: 'Google Apps Script Web App URL',
+      saveurl: 'Save URL',
+      testconnection: 'Test Connection',
+      setupinstructions: 'Setup Instructions:',
+      downloadappscript: 'Download Apps Script (.gs)',
+      displaysettings: 'Display Settings',
+      demodatamode: 'Demo Data Mode',
+      demodataon: 'Demo data ON (testing / review mode)',
+      demodataoff: 'Demo data OFF (live assessments only)',
+      demodesc: 'Switch off demo data when you\'re ready to use VOCGuard for live assessments. The register will show only real saved assessments.',
+      about: 'About VOCGuard'
+    },
+    common: {
+      loading: 'Loading…'
+    }
+  },
+  ar: {
+    nav: {
+      dashboard: 'لوحة المعلومات',
+      newassessment: 'تقييم جديد',
+      scanform: 'نموذج المسح',
+      register: 'السجل',
+      heatmap: 'خريطة حرارية للأسطول',
+      individual: 'فردي',
+      gapanalysis: 'تحليل الفجوات',
+      assessorreport: 'تقرير المقيِّم',
+      settings: 'الإعدادات'
+    },
+    dashboard: {
+      title: 'لوحة معلومات أداء الكفاءة المهنية',
+      outcomesbyactivity: 'النتائج حسب النشاط',
+      fleetoverviewbyrig: 'نظرة عامة على الأسطول حسب الرافعة',
+      monthlytrendpassrate: 'الاتجاه الشهري — معدل النجاح (6 أشهر)',
+      activitytrend: 'اتجاه النشاط (آخر 30 يومًا مقابل 30 يومًا السابقة)',
+      recentassessments: 'التقييمات الحديثة',
+      devreqactionreq: 'المطلوب تطوير — إجراء مطلوب'
+    },
+    assess: {
+      title: 'تقييم جديد للكفاءة المهنية',
+      setup: 'إعداد التقييم',
+      assessor: 'المقيِّم *',
+      assessmentdate: 'تاريخ التقييم *',
+      assessee: 'المقيَّم *',
+      riglocation: 'الرافعة / الموقع *',
+      roletrade: 'الدور / التخصص',
+      vocactivity: 'نشاط الكفاءة المهنية *',
+      assessmenttype: 'نوع التقييم',
+      type: {
+        initial: 'ابتدائي',
+        routine: 'روتيني (سنوي)',
+        postincident: 'بعد الحادث',
+        triggered: 'مُشغّل (فجوة محددة)'
+      },
+      ftwconfirmed: 'تم تأكيد خلو اللياقة للعمل؟',
+      ftw: {
+        yes: 'نعم — تم تأكيد خلو اللياقة',
+        no: 'لا — لم يتم التأكيد (لا يمكن متابعة التقييم)'
+      },
+      beginbtn: 'بدء التقييم ←',
+      printblank: 'طباعة النموذج الفارغ',
+      uploadscanned: 'تحميل النموذج الممسوح ضوئيًا',
+      coachingfeedbacklog: 'سجل التدريب والملاحظات',
+      coachingdesc: 'العناصر التي تم تقديم تدريب بشأنها خلال هذا التقييم (النقاط = 1). يعتبر هذا السجل السجل الرسمي للتدريب المقدم. مطلوب لجميع نتائج التدريب مع الكفاءة.',
+      assessornotes: 'ملاحظات المقيِّم',
+      reassessmentduedate: 'تاريخ استحقاق إعادة التقييم (المطلوب تطوير)'
+    },
+    scan: {
+      title: 'مسح نموذج الكفاءة المهنية الورقي',
+      step1title: 'الخطوة 1 — التقاط نموذج الكفاءة المهنية المكتمل',
+      step1desc: 'التقط صورة لنموذج الكفاءة المهنية الورقي المكتمل أو قم بتحميل مسح ضوئي. ستملأ رمز الاستجابة السريعة المطبوع على النموذج البيانات الوصفية للتقييم تلقائيًا.',
+      takephoto: 'التقط صورة',
+      uploadimage: 'تحميل صورة',
+      qrcodeextracted: 'تم استخراج بيانات رمز الاستجابة السريعة',
+      proceeddtoscores: 'المتابعة إلى إدخال النقاط',
+      noqrfound: 'لم يتم العثور على رمز استجابة سريعة — إدخال يدوي',
+      noqrdesc: 'لم يتمكن النظام من قراءة رمز الاستجابة السريعة. املأ البيانات الوصفية يدويًا ثم تابع إدخال النقاط.',
+      step2title: 'الخطوة 2 — إدخال النقاط من النموذج الورقي',
+      step2desc: 'اضغط على 0 / 1 / 2 لكل عنصر، اقرأ من النموذج الورقي المكتمل. تم تمييز العناصر الحرجة باللون الأحمر.',
+      reviewsave: 'مراجعة وحفظ',
+      step3title: 'الخطوة 3 — المراجعة والحفظ',
+      backtoscores: 'العودة إلى النقاط'
+    },
+    table: {
+      date: 'التاريخ',
+      assessee: 'المقيَّم',
+      activity: 'النشاط',
+      rig: 'الرافعة',
+      outcome: 'النتيجة'
+    },
+    form: {
+      selectworker: 'اختر عاملاً...',
+      additionalnotes: 'ملاحظات إضافية'
+    },
+    btn: {
+      reviewscores: 'مراجعة النقاط',
+      saveregister: 'الحفظ في السجل',
+      printpdf: 'طباعة PDF',
+      reset: 'إعادة تعيين',
+      back: 'رجوع',
+      saveassessment: 'حفظ التقييم',
+      clear: 'مسح'
+    },
+    register: {
+      title: 'سجل تقييم الكفاءة المهنية',
+      exportcsv: 'تصدير CSV',
+      id: 'معرّف',
+      role: 'الدور',
+      type: 'النوع',
+      assessor: 'المقيِّم',
+      reassessBy: 'إعادة التقييم بواسطة'
+    },
+    filter: {
+      allrigs: 'جميع الرافعات',
+      allactivities: 'جميع الأنشطة',
+      alloutcomes: 'جميع النتائج',
+      allassessors: 'جميع المقيِّمين',
+      view: 'عرض:'
+    },
+    heatmap: {
+      title: 'خريطة حرارية لكفاءة الأسطول',
+      stacked: 'مكدس (VC / CwC / DR)',
+      vcpct: '% كفاءة موثقة فقط',
+      vcpct2: 'VC %',
+      cwcpct: 'CwC %',
+      drpct: 'DR %',
+      outcomesbyrxactivity: 'النتائج حسب الرافعة × النشاط (شريط مكدس)',
+      rigperfsummary: 'ملخص أداء الرافعة',
+      total: 'الإجمالي',
+      atrisk: 'في الخطر',
+      activityrisk: 'تصنيف مخاطر النشاط (أعلى DR %)'
+    },
+    individual: {
+      title: 'الملف الشخصي للكفاءة الفردية',
+      compstatusallactivities: 'حالة الكفاءة — جميع الأنشطة',
+      assessmenthistory: 'سجل التقييم'
+    },
+    gaps: {
+      title: 'تحليل الفجوات',
+      allrigsfleet: 'جميع الرافعات (الأسطول)',
+      devreqpending: 'المطلوب تطوير — إعادة التقييم المعلقة',
+      overduereas: 'إعادات التقييم المتأخرة',
+      highriskactivities: 'أنشطة عالية المخاطر (حسب معدل DR)',
+      rigsoutstandinggaps: 'الرافعات ذات الفجوات المعلقة'
+    },
+    assessors: {
+      title: 'تقرير جودة المقيِّم والمعايرة',
+      understandingreport: 'فهم هذا التقرير',
+      reportdesc: 'يحلل هذا التقرير أداء المقيِّم لتحديد مشاكل المعايرة والتناقضات ومخاوف الجودة. يتم وضع علم على الختم المطاطي عندما يكون متوسط درجة المقيِّم أعلى بكثير من المتوسط الأسطول، مما يشير إلى عدم كفاية الصرامة. يقارن فهرس المعايرة توزيعات نقاط كل مقيِّم مقابل متوسط الأسطول للأنشطة نفسها — يشير الفهرس المرتفع إلى نقاط أكثر تساهلاً أو أكثر صرامة.',
+      fleetlevelscores: 'توزيع درجات مستوى الأسطول'
+    },
+    settings: {
+      title: 'الإعدادات والتكوين',
+      gsintegration: 'تكامل جداول البيانات من Google',
+      gsdesc: 'الاتصال بتطبيق ويب Google Apps Script لمزامنة كل تقييم محفوظ تلقائيًا إلى جداول بيانات Google للاتجاهات والتقارير والنسخ الاحتياطية غير المتصلة بالإنترنت.',
+      gsurl: 'عنوان URL لتطبيق ويب Google Apps Script',
+      saveurl: 'حفظ URL',
+      testconnection: 'اختبر الاتصال',
+      setupinstructions: 'تعليمات الإعداد:',
+      downloadappscript: 'تحميل Apps Script (.gs)',
+      displaysettings: 'إعدادات العرض',
+      demodatamode: 'وضع بيانات العرض التوضيحي',
+      demodataon: 'بيانات العرض التوضيحي ON (وضع الاختبار/المراجعة)',
+      demodataoff: 'بيانات العرض التوضيحي OFF (التقييمات المباشرة فقط)',
+      demodesc: 'قم بإيقاف بيانات العرض التوضيحي عندما تكون مستعدًا لاستخدام VOCGuard للتقييمات المباشرة. سيعرض السجل التقييمات المحفوظة الحقيقية فقط.',
+      about: 'عن VOCGuard'
+    },
+    common: {
+      loading: 'جاري التحميل…'
+    }
+  },
+  hi: {
+    nav: {
+      dashboard: 'डैशबोर्ड',
+      newassessment: 'नई मूल्यांकन',
+      scanform: 'फॉर्म स्कैन करें',
+      register: 'रजिस्टर',
+      heatmap: 'फ्लीट हीट मैप',
+      individual: 'व्यक्तिगत',
+      gapanalysis: 'अंतराल विश्लेषण',
+      assessorreport: 'आकलनकर्ता रिपोर्ट',
+      settings: 'सेटिंग्स'
+    },
+    dashboard: {
+      title: 'वीओसी प्रदर्शन डैशबोर्ड',
+      outcomesbyactivity: 'गतिविधि के आधार पर परिणाम',
+      fleetoverviewbyrig: 'रिग के आधार पर बेड़े का अवलोकन',
+      monthlytrendpassrate: 'मासिक प्रवृत्ति — पास दर (6 महीने)',
+      activitytrend: 'गतिविधि प्रवृत्ति (पिछले 30 दिन बनाम पूर्व 30 दिन)',
+      recentassessments: 'हाल की मूल्यांकन',
+      devreqactionreq: 'विकास आवश्यक — कार्रवाई आवश्यक'
+    },
+    assess: {
+      title: 'नई वीओसी मूल्यांकन',
+      setup: 'मूल्यांकन सेटअप',
+      assessor: 'आकलनकर्ता *',
+      assessmentdate: 'मूल्यांकन तारीख *',
+      assessee: 'आकलनीय *',
+      riglocation: 'रिग / स्थान *',
+      roletrade: 'भूमिका / व्यापार',
+      vocactivity: 'वीओसी गतिविधि *',
+      assessmenttype: 'मूल्यांकन प्रकार',
+      type: {
+        initial: 'प्रारंभिक',
+        routine: 'नियमित (वार्षिक)',
+        postincident: 'घटना के बाद',
+        triggered: 'ट्रिगर किया गया (अंतर की पहचान की गई)'
+      },
+      ftwconfirmed: 'काम के लिए फिटनेस क्लीयरेंस की पुष्टि की गई?',
+      ftw: {
+        yes: 'हाँ — एफटीडब्ल्यू की पुष्टि की गई',
+        no: 'नहीं — पुष्टि नहीं की गई (मूल्यांकन जारी नहीं रह सकता)'
+      },
+      beginbtn: 'मूल्यांकन शुरू करें →',
+      printblank: 'खाली फॉर्म प्रिंट करें',
+      uploadscanned: 'स्कैन किया गया फॉर्म अपलोड करें',
+      coachingfeedbacklog: 'कोचिंग और प्रतिक्रिया लॉग',
+      coachingdesc: 'वे आइटम जिनके लिए इस मूल्यांकन के दौरान कोचिंग प्रदान की गई थी (स्कोर = 1)। यह लॉग कोचिंग का औपचारिक रिकॉर्ड है। सभी कोचिंग आउटकम के लिए आवश्यक।',
+      assessornotes: 'आकलनकर्ता नोट्स',
+      reassessmentduedate: 'पुनः मूल्यांकन की तारीख (विकास आवश्यक)'
+    },
+    scan: {
+      title: 'पेपर वीओसी फॉर्म स्कैन करें',
+      step1title: 'चरण 1 — पूर्ण वीओसी फॉर्म कैप्चर करें',
+      step1desc: 'पूर्ण पेपर वीओसी फॉर्म की एक तस्वीर लें या स्कैन अपलोड करें। फॉर्म पर मुद्रित क्यूआर कोड मूल्यांकन मेटाडेटा को स्वचालित रूप से भर देगा।',
+      takephoto: 'तस्वीर लें',
+      uploadimage: 'छवि अपलोड करें',
+      qrcodeextracted: 'क्यूआर कोड डेटा निकाला गया',
+      proceeddtoscores: 'स्कोर प्रविष्टि के लिए आगे बढ़ें',
+      noqrfound: 'कोई क्यूआर कोड नहीं मिला — मैनुअल प्रविष्टि',
+      noqrdesc: 'क्यूआर कोड को पढ़ा नहीं जा सका। मेटाडेटा को मैनुअल रूप से भरें, फिर स्कोर प्रविष्टि के लिए आगे बढ़ें।',
+      step2title: 'चरण 2 — पेपर फॉर्म से स्कोर दर्ज करें',
+      step2desc: 'प्रत्येक आइटम के लिए 0 / 1 / 2 पर टैप करें, पूर्ण पेपर फॉर्म से पढ़ें। महत्वपूर्ण आइटम लाल रंग में हाइलाइट किए गए हैं।',
+      reviewsave: 'समीक्षा और सहेजें',
+      step3title: 'चरण 3 — समीक्षा और सहेजें',
+      backtoscores: 'स्कोर पर वापस जाएं'
+    },
+    table: {
+      date: 'तारीख',
+      assessee: 'आकलनीय',
+      activity: 'गतिविधि',
+      rig: 'रिग',
+      outcome: 'परिणाम'
+    },
+    form: {
+      selectworker: 'कर्मचारी चुनें...',
+      additionalnotes: 'अतिरिक्त नोट्स'
+    },
+    btn: {
+      reviewscores: 'स्कोर की समीक्षा करें',
+      saveregister: 'रजिस्टर में सहेजें',
+      printpdf: 'पीडीएफ प्रिंट करें',
+      reset: 'रीसेट',
+      back: 'वापस',
+      saveassessment: 'मूल्यांकन सहेजें',
+      clear: 'साफ करें'
+    },
+    register: {
+      title: 'वीओसी मूल्यांकन रजिस्टर',
+      exportcsv: 'CSV निर्यात करें',
+      id: 'आईडी',
+      role: 'भूमिका',
+      type: 'प्रकार',
+      assessor: 'आकलनकर्ता',
+      reassessBy: 'द्वारा पुनः मूल्यांकन करें'
+    },
+    filter: {
+      allrigs: 'सभी रिग',
+      allactivities: 'सभी गतिविधियां',
+      alloutcomes: 'सभी परिणाम',
+      allassessors: 'सभी आकलनकर्ता',
+      view: 'दृश्य:'
+    },
+    heatmap: {
+      title: 'बेड़े की योग्यता हीट मैप',
+      stacked: 'स्टैक्ड (VC / CwC / DR)',
+      vcpct: '% केवल सत्यापित योग्य',
+      vcpct2: 'VC %',
+      cwcpct: 'CwC %',
+      drpct: 'DR %',
+      outcomesbyrxactivity: 'रिग × गतिविधि के अनुसार परिणाम (स्टैक्ड बार)',
+      rigperfsummary: 'रिग प्रदर्शन सारांश',
+      total: 'कुल',
+      atrisk: 'जोखिम में',
+      activityrisk: 'गतिविधि जोखिम रैंकिंग (सर्वोच्च DR %)'
+    },
+    individual: {
+      title: 'व्यक्तिगत योग्यता प्रोफाइल',
+      compstatusallactivities: 'योग्यता स्थिति — सभी गतिविधियां',
+      assessmenthistory: 'मूल्यांकन इतिहास'
+    },
+    gaps: {
+      title: 'अंतराल विश्लेषण',
+      allrigsfleet: 'सभी रिग (फ्लीट)',
+      devreqpending: 'विकास आवश्यक — पुनः मूल्यांकन लंबित',
+      overduereas: 'देरी से पुनः मूल्यांकन',
+      highriskactivities: 'उच्च जोखिम वाली गतिविधियां (DR दर के अनुसार)',
+      rigsoutstandinggaps: 'बकाया अंतराल वाले रिग'
+    },
+    assessors: {
+      title: 'आकलनकर्ता गुणवत्ता और अंशांकन रिपोर्ट',
+      understandingreport: 'इस रिपोर्ट को समझना',
+      reportdesc: 'यह रिपोर्ट अंशांकन समस्याओं, असंगतियों और गुणवत्ता संबंधी चिंताओं की पहचान करने के लिए आकलनकर्ता के प्रदर्शन का विश्लेषण करती है। रबर स्टैम्पिंग को तब चिह्नित किया जाता है जब आकलनकर्ता का औसत स्कोर फ्लीट माध्य से काफी अधिक होता है, जो अपर्याप्त कठोरता का सुझाव देता है। अंशांकन सूचकांक समान गतिविधियों के लिए फ्लीट औसत के विरुद्ध प्रत्येक आकलनकर्ता के स्कोर वितरण की तुलना करता है — एक उच्च सूचकांक अत्यधिक सहिष्णु या अत्यधिक कठोर स्कोरिंग का सुझाव देता है।',
+      fleetlevelscores: 'फ्लीट-स्तर स्कोर वितरण'
+    },
+    settings: {
+      title: 'सेटिंग्स और कॉन्फ़िगरेशन',
+      gsintegration: 'Google शीट्स एकीकरण',
+      gsdesc: 'ट्रेंडिंग, रिपोर्टिंग और ऑफ़लाइन बैकअप के लिए Google शीट्स में हर बचाई गई मूल्यांकन को स्वचालित रूप से सिंक करने के लिए Google Apps Script वेब ऐप से कनेक्ट करें।',
+      gsurl: 'Google Apps Script वेब ऐप URL',
+      saveurl: 'URL सहेजें',
+      testconnection: 'कनेक्शन का परीक्षण करें',
+      setupinstructions: 'सेटअप निर्देश:',
+      downloadappscript: 'Apps Script (.gs) डाउनलोड करें',
+      displaysettings: 'डिस्प्ले सेटिंग्स',
+      demodatamode: 'डेमो डेटा मोड',
+      demodataon: 'डेमो डेटा ON (परीक्षण/समीक्षा मोड)',
+      demodataoff: 'डेमो डेटा OFF (केवल लाइव मूल्यांकन)',
+      demodesc: 'जब आप VOCGuard को लाइव मूल्यांकन के लिए उपयोग करने के लिए तैयार हों तो डेमो डेटा को बंद करें। रजिस्टर केवल वास्तविक सहेजी गई मूल्यांकन दिखाएगा।',
+      about: 'VOCGuard के बारे में'
+    },
+    common: {
+      loading: 'लोड हो रहा है…'
+    }
+  },
+  zh: {
+    nav: {
+      dashboard: '仪表板',
+      newassessment: '新建评估',
+      scanform: '扫描表单',
+      register: '寄存器',
+      heatmap: '舰队热力图',
+      individual: '个人',
+      gapanalysis: '差距分析',
+      assessorreport: '评估员报告',
+      settings: '设置'
+    },
+    dashboard: {
+      title: '职业能力验证性能仪表板',
+      outcomesbyactivity: '按活动的结果',
+      fleetoverviewbyrig: '按钻机的舰队概览',
+      monthlytrendpassrate: '月度趋势 — 通过率（6个月）',
+      activitytrend: '活动趋势（最后30天对比之前30天）',
+      recentassessments: '最近的评估',
+      devreqactionreq: '需要开发 — 需要采取行动'
+    },
+    assess: {
+      title: '新建职业能力验证评估',
+      setup: '评估设置',
+      assessor: '评估员 *',
+      assessmentdate: '评估日期 *',
+      assessee: '被评估者 *',
+      riglocation: '钻机/位置 *',
+      roletrade: '角色/专业',
+      vocactivity: '职业能力验证活动 *',
+      assessmenttype: '评估类型',
+      type: {
+        initial: '初始',
+        routine: '常规（年度）',
+        postincident: '事故后',
+        triggered: '触发（已识别的差距）'
+      },
+      ftwconfirmed: '是否已确认适岗？',
+      ftw: {
+        yes: '是 — 已确认适岗',
+        no: '否 — 未确认（无法进行评估）'
+      },
+      beginbtn: '开始评估 →',
+      printblank: '打印空白表单',
+      uploadscanned: '上传扫描的表单',
+      coachingfeedbacklog: '辅导和反馈日志',
+      coachingdesc: '本评估期间提供辅导的项目（分数 = 1）。此日志是所提供辅导的正式记录。所有辅导教练结果都需要。',
+      assessornotes: '评估员备注',
+      reassessmentduedate: '重新评估截止日期（需要开发）'
+    },
+    scan: {
+      title: '扫描纸质职业能力验证表单',
+      step1title: '步骤 1 — 捕获已完成的职业能力验证表单',
+      step1desc: '拍摄已完成的纸质职业能力验证表单的照片或上传扫描件。表单上打印的二维码将自动填充评估元数据。',
+      takephoto: '拍照',
+      uploadimage: '上传图像',
+      qrcodeextracted: '已提取二维码数据',
+      proceeddtoscores: '继续进行分数输入',
+      noqrfound: '未找到二维码 — 手动输入',
+      noqrdesc: '无法读取二维码。手动填写元数据，然后继续输入分数。',
+      step2title: '步骤 2 — 从纸质表单输入分数',
+      step2desc: '为每个项目点击 0 / 1 / 2，从完整的纸质表单中读取。关键项目以红色突出显示。',
+      reviewsave: '审核并保存',
+      step3title: '步骤 3 — 审核并保存',
+      backtoscores: '返回分数'
+    },
+    table: {
+      date: '日期',
+      assessee: '被评估者',
+      activity: '活动',
+      rig: '钻机',
+      outcome: '结果'
+    },
+    form: {
+      selectworker: '选择工人...',
+      additionalnotes: '其他备注'
+    },
+    btn: {
+      reviewscores: '审核分数',
+      saveregister: '保存到寄存器',
+      printpdf: '打印 PDF',
+      reset: '重置',
+      back: '返回',
+      saveassessment: '保存评估',
+      clear: '清除'
+    },
+    register: {
+      title: '职业能力验证评估寄存器',
+      exportcsv: '导出 CSV',
+      id: '编号',
+      role: '角色',
+      type: '类型',
+      assessor: '评估员',
+      reassessBy: '重新评估者'
+    },
+    filter: {
+      allrigs: '所有钻机',
+      allactivities: '所有活动',
+      alloutcomes: '所有结果',
+      allassessors: '所有评估员',
+      view: '查看：'
+    },
+    heatmap: {
+      title: '舰队能力热力图',
+      stacked: '堆叠（VC / CwC / DR）',
+      vcpct: '仅百分比已验证的能力',
+      vcpct2: 'VC %',
+      cwcpct: 'CwC %',
+      drpct: 'DR %',
+      outcomesbyrxactivity: '按钻机 × 活动的结果（堆叠条）',
+      rigperfsummary: '钻机性能摘要',
+      total: '总计',
+      atrisk: '处于风险中',
+      activityrisk: '活动风险排名（最高 DR %）'
+    },
+    individual: {
+      title: '个人能力档案',
+      compstatusallactivities: '能力状态 — 所有活动',
+      assessmenthistory: '评估历史'
+    },
+    gaps: {
+      title: '差距分析',
+      allrigsfleet: '所有钻机（舰队）',
+      devreqpending: '需要开发 — 待评估',
+      overduereas: '逾期重新评估',
+      highriskactivities: '高风险活动（按DR率）',
+      rigsoutstandinggaps: '存在未解决差距的钻机'
+    },
+    assessors: {
+      title: '评估员质量和校准报告',
+      understandingreport: '了解此报告',
+      reportdesc: '此报告分析评估员性能，以识别校准问题、不一致和质量问题。当评估员的平均分数明显高于舰队平均值时，会标记"盖章"，这表明严谨度不足。校准指数将每个评估员的分数分布与相同活动的舰队平均值进行比较 — 高指数表示评分过于宽松或过于严格。',
+      fleetlevelscores: '舰队级分数分布'
+    },
+    settings: {
+      title: '设置和配置',
+      gsintegration: 'Google 表格集成',
+      gsdesc: '连接到 Google Apps Script 网络应用程序，以自动将每个保存的评估同步到 Google 表格，用于趋势分析、报告和离线备份。',
+      gsurl: 'Google Apps Script 网络应用 URL',
+      saveurl: '保存 URL',
+      testconnection: '测试连接',
+      setupinstructions: '设置说明：',
+      downloadappscript: '下载 Apps Script (.gs)',
+      displaysettings: '显示设置',
+      demodatamode: '演示数据模式',
+      demodataon: '演示数据 ON（测试/审核模式）',
+      demodataoff: '演示数据 OFF（仅限实时评估）',
+      demodesc: '当您准备好使用 VOCGuard 进行实时评估时，请关闭演示数据。寄存器将仅显示真实保存的评估。',
+      about: '关于 VOCGuard'
+    },
+    common: {
+      loading: '加载中…'
+    }
+  }
+};
+
+// Set language and update all elements with data-i18n attributes
+function setLanguage(lang) {
+  if (!TRANSLATIONS[lang]) lang = 'en';
+  currentLanguage = lang;
+  document.documentElement.lang = lang;
+  if (lang === 'ar') {
+    document.body.dir = 'rtl';
+  } else {
+    document.body.dir = 'ltr';
+  }
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const keys = key.split('.');
+    let translation = TRANSLATIONS[lang];
+    for (const k of keys) {
+      translation = translation[k];
+      if (!translation) break;
+    }
+    if (translation) {
+      el.textContent = translation;
+    }
+  });
+}
+
+// Initialize language selector
+document.addEventListener('DOMContentLoaded', function() {
+  const langSelect = document.getElementById('lang-select');
+  if (langSelect) {
+    langSelect.addEventListener('change', function(e) {
+      setLanguage(e.target.value);
+    });
+    setLanguage('en');
+  }
+});
+
 function renderSettings() {
   const urlEl = document.getElementById('gs-url');
   if (urlEl) urlEl.value = SETTINGS.gsUrl || '';
@@ -2078,17 +2756,17 @@ async function verifyPin() {
   }
 }
 
-// Close modal on overlay background click
-document.getElementById('pin-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closePinModal();
-});
-
-// Keyboard support
-document.addEventListener('keydown', function(e) {
-  if (!document.getElementById('pin-overlay').classList.contains('visible')) return;
-  if (e.key >= '0' && e.key <= '9') pinKey(e.key);
-  else if (e.key === 'Backspace') pinClear();
-  else if (e.key === 'Escape') pinCancel();
+// Close modal on overlay background click + keyboard support
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('pin-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closePinModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('pin-overlay').classList.contains('visible')) return;
+    if (e.key >= '0' && e.key <= '9') pinKey(e.key);
+    else if (e.key === 'Backspace') pinClear();
+    else if (e.key === 'Escape') pinCancel();
+  });
 });
 
 // Paste the Web App URL into VOCGuard Settings
@@ -2294,7 +2972,7 @@ ${itemsHTML}
     <div style="font-size:8.5px;color:#999;margin-top:3px">${name||'_______________'}</div>
   </div>
 </div>
-<div style="text-align:center;margin-top:8px;font-size:8px;color:#bbb">VOCGuard v2.0 | https://thejadebuddha.github.io/VOCGuard/ | BHDC-HSE-TRN-PRO-001 Rev 03 | Generated: ${new Date().toLocaleDateString('en-GB')}</div>
+<div style="text-align:center;margin-top:8px;font-size:8px;color:#bbb">VOCGuard v2.1 | BHDC-HSE-TRN-PRO-001 Rev 03 | Generated: ${new Date().toLocaleDateString('en-GB')}</div>
 <button class="no-print" onclick="window.print()" style="margin-top:8px;padding:5px 14px;background:#1B3A5C;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px">🖨️ Print</button>
 <script>
   window.onload = function() {
