@@ -294,6 +294,7 @@ table.data-table tr:hover td { background: #f8fafd; }
 <!-- ═══ NEW ASSESSMENT ═══ -->
 <div id="page-assess" class="page">
   <div class="section-title" data-i18n="assess.title">✅ New VOC Assessment</div>
+  <div id="assess-followup-banner" style="display:none;background:#eaf2f8;border:2px solid #3498db;border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:14px;color:#1a5276"></div>
   <div id="assess-step-setup" class="assessment-step active">
     <div class="card" style="max-width:680px">
       <h3 data-i18n="assess.setup">Assessment Setup</h3>
@@ -522,7 +523,7 @@ table.data-table tr:hover td { background: #f8fafd; }
       <table class="data-table" id="register-table">
         <thead><tr>
           <th data-i18n="register.id">ID</th><th data-i18n="table.date">Date</th><th data-i18n="table.assessee">Assessee</th><th data-i18n="register.role">Role</th><th data-i18n="table.rig">Rig</th>
-          <th data-i18n="table.activity">Activity</th><th data-i18n="register.type">Type</th><th data-i18n="register.assessor">Assessor</th><th data-i18n="table.outcome">Outcome</th><th data-i18n="register.reassessBy">Reassess By</th>
+          <th data-i18n="table.activity">Activity</th><th data-i18n="register.type">Type</th><th data-i18n="register.assessor">Assessor</th><th data-i18n="table.outcome">Outcome</th><th>Status</th><th data-i18n="register.reassessBy">Reassess By</th>
         </tr></thead>
         <tbody id="register-tbody"></tbody>
       </table>
@@ -577,7 +578,7 @@ table.data-table tr:hover td { background: #f8fafd; }
         <div id="ind-activity-list"></div>
       </div>
     </div>
-    <div class="card"><h3 data-i18n="individual.assessmenthistory">Assessment History</h3><div class="tbl-wrap"><table class="data-table" id="ind-history-table"><thead><tr><th data-i18n="table.date">Date</th><th data-i18n="table.activity">Activity</th><th data-i18n="register.assessor">Assessor</th><th data-i18n="table.outcome">Outcome</th><th data-i18n="register.type">Type</th></tr></thead><tbody id="ind-history-tbody"></tbody></table></div></div>
+    <div class="card"><h3 data-i18n="individual.assessmenthistory">Assessment History</h3><div class="tbl-wrap"><table class="data-table" id="ind-history-table"><thead><tr><th data-i18n="table.date">Date</th><th data-i18n="table.activity">Activity</th><th data-i18n="register.assessor">Assessor</th><th data-i18n="table.outcome">Outcome</th><th data-i18n="register.status">Status</th><th data-i18n="register.type">Type</th></tr></thead><tbody id="ind-history-tbody"></tbody></table></div></div>
   </div>
   <div id="ind-search-results-list"></div>
 </div>
@@ -1010,6 +1011,16 @@ function outcomeBadge(o) {
   return `<span class="badge badge-na">${o}</span>`;
 }
 
+// v4.0: Status badge for lifecycle tracking
+function statusBadge(s, a) {
+  if (!s) return '';
+  if (s === 'Closed') return `<span class="badge badge-vc" style="font-size:0.7em">Closed</span>`;
+  if (s === 'Open') return `<span class="badge badge-dr" style="font-size:0.7em;cursor:pointer" onclick="startFollowUp('${a.id}','${(a.assesseeName||'').replace(/'/g,"\\'")}','${a.assesseeId||''}','${a.rig||''}','${a.activityId||''}','${a.role||''}')">Open — Reassess</span>`;
+  if (s === 'Overdue') return `<span class="badge" style="font-size:0.7em;background:#922b21;color:#fff;cursor:pointer" onclick="startFollowUp('${a.id}','${(a.assesseeName||'').replace(/'/g,"\\'")}','${a.assesseeId||''}','${a.rig||''}','${a.activityId||''}','${a.role||''}')">OVERDUE — Reassess</span>`;
+  if (s === 'Coaching Required') return `<span class="badge badge-cwc" style="font-size:0.7em">Coaching Required</span>`;
+  return `<span class="badge badge-na" style="font-size:0.7em">${s}</span>`;
+}
+
 function rigBadge(rig) {
   const cls = {
     'Rig 67':'rig-67','Rig 68':'rig-68','Rig 117':'rig-117','Rig 118':'rig-118'
@@ -1060,14 +1071,23 @@ function renderDashboard() {
   const vc = REGISTER.filter(a=>a.outcome==='Verified Competent').length;
   const cwc = REGISTER.filter(a=>a.outcome==='Competent with Coaching').length;
   const dr = REGISTER.filter(a=>a.outcome==='Development Required').length;
-  const overdueCount = REGISTER.filter(a => a.reassessmentDue && a.reassessmentDue < todayStr() && a.outcome==='Development Required').length;
+  // v4.0: Status-aware counts — only open DRs (not closed by follow-up)
+  const openDR = REGISTER.filter(a => {
+    const s = a.status || '';
+    return a.outcome === 'Development Required' && s !== 'Closed';
+  }).length;
+  const overdueCount = REGISTER.filter(a => {
+    const s = a.status || '';
+    return a.outcome === 'Development Required' && s !== 'Closed' &&
+           a.reassessmentDue && a.reassessmentDue < todayStr();
+  }).length;
 
   const pct = (n) => total > 0 ? Math.round(n/total*100) + '%' : '—';
   document.getElementById('kpi-row').innerHTML = `
-    <div class="kpi-card kpi-total"><div class="kpi-val">${total}</div><div class="kpi-label">Total Assessments</div><div class="kpi-sub">Last 6 months</div></div>
+    <div class="kpi-card kpi-total"><div class="kpi-val">${total}</div><div class="kpi-label">Total Assessments</div><div class="kpi-sub">All records</div></div>
     <div class="kpi-card kpi-vc"><div class="kpi-val">${pct(vc)}</div><div class="kpi-label">Verified Competent</div><div class="kpi-sub">${vc} assessments</div></div>
     <div class="kpi-card kpi-cwc"><div class="kpi-val">${pct(cwc)}</div><div class="kpi-label">Competent with Coaching</div><div class="kpi-sub">${cwc} assessments</div></div>
-    <div class="kpi-card kpi-dr"><div class="kpi-val">${pct(dr)}</div><div class="kpi-label">Development Required</div><div class="kpi-sub">${dr} assessments</div></div>
+    <div class="kpi-card kpi-dr"><div class="kpi-val">${openDR}</div><div class="kpi-label">Open DRs</div><div class="kpi-sub">${dr} total DR / ${openDR} awaiting follow-up</div></div>
     <div class="kpi-card" style="border-left:3px solid #c0392b"><div class="kpi-val" style="color:#c0392b">${overdueCount}</div><div class="kpi-label">Overdue Reassessments</div><div class="kpi-sub">Immediate action needed</div></div>
   `;
 
@@ -1249,9 +1269,17 @@ function renderRegister() {
 
   document.getElementById('reg-count').textContent = `${data.length} records`;
   document.getElementById('register-tbody').innerHTML = data.slice(0,200).map(a => {
-    const overdue = a.reassessmentDue && a.reassessmentDue < todayStr() && a.outcome==='Development Required';
-    return `<tr>
-      <td style="font-size:11px;color:#888">${a.id}</td>
+    // v4.0: Compute status for display
+    let st = a.status || '';
+    if (!st) {
+      if (a.outcome === 'Verified Competent') st = 'Closed';
+      else if (a.outcome === 'Competent with Coaching') st = (a.notes || Object.keys(a.scores||{}).some(k=>a.scores[k]===1)) ? 'Closed' : 'Coaching Required';
+      else if (a.outcome === 'Development Required') st = 'Open';
+    }
+    if (st === 'Open' && a.reassessmentDue && a.reassessmentDue < todayStr()) st = 'Overdue';
+    const overdue = st === 'Overdue';
+    return `<tr${overdue ? ' style="background:#fdf2f2"' : ''}>
+      <td style="font-size:11px;color:#888">${a.id}${a.followUpOf ? '<br><span style="color:#3498db;font-size:10px">↳ ' + a.followUpOf + '</span>' : ''}</td>
       <td style="white-space:nowrap">${formatDate(a.date)}</td>
       <td><strong>${a.assesseeName}</strong><br><span class="small">${a.assesseeId || '—'}</span></td>
       <td style="font-size:12px">${a.role||'—'}</td>
@@ -1260,7 +1288,8 @@ function renderRegister() {
       <td style="font-size:11px">${a.assessmentType||'—'}</td>
       <td style="font-size:12px">${ASSESSORS.find(x=>x.id===a.assessorId)?.shortName||a.assessorName||'—'}</td>
       <td>${outcomeBadge(a.outcome)}</td>
-      <td style="font-size:11px${overdue?' color:#c0392b;font-weight:bold':''}">${formatDate(a.reassessmentDue)}${overdue?' ⚠':''}</td>
+      <td>${statusBadge(st, a)}</td>
+      <td style="font-size:11px${overdue?' ;color:#c0392b;font-weight:bold':''}">${formatDate(a.reassessmentDue)}${overdue?' ⚠':''}</td>
     </tr>`;
   }).join('');
 }
@@ -1271,12 +1300,48 @@ function clearRegFilters() {
   renderRegister();
 }
 
+// v4.0: Start a follow-up assessment for a DR record
+function startFollowUp(originalId, name, empId, rig, activityId, role) {
+  // Switch to New Assessment tab with pre-populated fields
+  showPage('assess');
+  showAssessStep('setup');
+  // Set assessment type to Follow-Up
+  const typeEl = document.getElementById('setup-type');
+  if (typeEl) typeEl.value = 'Follow-Up';
+  // Pre-fill rig first (triggers assessee dropdown population)
+  const rigEl = document.getElementById('setup-rig');
+  if (rigEl) { rigEl.value = rig; populateAssesseeDropdown(); }
+  // Select assessee from dropdown by empId
+  const selEl = document.getElementById('setup-assessee-select');
+  if (selEl) {
+    for (let i = 0; i < selEl.options.length; i++) {
+      if (selEl.options[i].value === empId) { selEl.selectedIndex = i; break; }
+    }
+  }
+  // Set hidden fields directly
+  document.getElementById('setup-assessee-name').value = name;
+  document.getElementById('setup-emp-id').value = empId;
+  // Set role and activity
+  const roleEl = document.getElementById('setup-role');
+  if (roleEl) roleEl.value = role;
+  const actEl = document.getElementById('setup-activity');
+  if (actEl) actEl.value = activityId;
+  // Store the follow-up reference
+  window._followUpOf = originalId;
+  // Notify
+  const banner = document.getElementById('assess-followup-banner');
+  if (banner) {
+    banner.style.display = 'block';
+    banner.innerHTML = '<strong>Follow-Up Assessment</strong> for <em>' + originalId + '</em> — ' + name + ' (' + empId + ')';
+  }
+}
+
 function exportCSV() {
-  const headers = ['ID','Date','Assessee','Employee ID','Role','Rig','Activity','Assessment Type','Assessor','Outcome','Reassessment Due'];
+  const headers = ['ID','Date','Assessee','Employee ID','Role','Rig','Activity','Assessment Type','Assessor','Outcome','Status','Reassessment Due','Follow-Up Of'];
   const rows = REGISTER.map(a => [
     a.id, a.date, a.assesseeName, a.assesseeId||'', a.role||'', a.rig,
     a.activityName, a.assessmentType||'', a.assessorName||ASSESSORS.find(x=>x.id===a.assessorId)?.name||'',
-    a.outcome, a.reassessmentDue||''
+    a.outcome, a.status||'', a.reassessmentDue||'', a.followUpOf||''
   ]);
   const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv'});
@@ -1474,6 +1539,7 @@ function showIndividualProfile(name, empId) {
     <div class="assessor-stat"><span>Verified Competent</span><span class="flag-good"><strong>${personRecs.filter(a=>a.outcome==='Verified Competent').length}</strong></span></div>
     <div class="assessor-stat"><span>Competent w/ Coaching</span><span class="flag-warn">${personRecs.filter(a=>a.outcome==='Competent with Coaching').length}</span></div>
     <div class="assessor-stat"><span>Development Required</span><span class="${personRecs.filter(a=>a.outcome==='Development Required').length>0?'flag-bad':''}">${personRecs.filter(a=>a.outcome==='Development Required').length}</span></div>
+    <div class="assessor-stat"><span>Open / Overdue</span><span class="${personRecs.filter(a=>a.status==='Open'||a.status==='Overdue').length>0?'flag-bad':''}">${personRecs.filter(a=>a.status==='Open'||a.status==='Overdue').length}</span></div>
   `;
 
   // Activity status (latest outcome per activity)
@@ -1485,23 +1551,28 @@ function showIndividualProfile(name, empId) {
   const actList = ACTIVITIES.map(act => {
     const latest = latestPerAct[act.id];
     if (!latest) return `<div class="assessor-stat"><span style="font-size:12px">${act.name}</span><span><span class="badge badge-na">Not Assessed</span></span></div>`;
-    const overdue = latest.outcome==='Development Required' && latest.reassessmentDue && latest.reassessmentDue < todayStr();
+    let st = latest.status || '';
+    if (st === 'Open' && latest.reassessmentDue && latest.reassessmentDue < todayStr()) st = 'Overdue';
     return `<div class="assessor-stat">
       <span style="font-size:12px">${act.name}</span>
-      <span>${outcomeBadge(latest.outcome)}${overdue?'<span class="small flag-bad"> ⚠ Overdue</span>':''}</span>
+      <span>${outcomeBadge(latest.outcome)} ${statusBadge(st, latest)}</span>
     </div>`;
   });
   document.getElementById('ind-activity-list').innerHTML = actList.join('');
 
-  // History table
-  document.getElementById('ind-history-tbody').innerHTML = personRecs.sort((a,b)=>b.date.localeCompare(a.date)).map(a => `
-    <tr>
+  // History table — with status badges (v4.0)
+  document.getElementById('ind-history-tbody').innerHTML = personRecs.sort((a,b)=>b.date.localeCompare(a.date)).map(a => {
+    let st = a.status || '';
+    if (st === 'Open' && a.reassessmentDue && a.reassessmentDue < todayStr()) st = 'Overdue';
+    return `<tr${st === 'Overdue' ? ' style="background:#fdf2f2"' : ''}>
       <td>${formatDate(a.date)}</td>
       <td style="font-size:12px">${a.activityName}</td>
       <td style="font-size:12px">${ASSESSORS.find(x=>x.id===a.assessorId)?.shortName||a.assessorName||'—'}</td>
       <td>${outcomeBadge(a.outcome)}</td>
-      <td style="font-size:11px">${a.assessmentType||'—'}</td>
-    </tr>`).join('');
+      <td>${statusBadge(st, a)}</td>
+      <td style="font-size:11px">${a.assessmentType||'—'}${a.followUpOf ? '<br><span style="color:#3498db;font-size:10px">↳ ' + a.followUpOf + '</span>' : ''}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1911,20 +1982,28 @@ function saveAssessment() {
   // Collect coaching log from scoring panels
   const chk = CHECKLISTS[currentAssessment.activityId];
   const coachingLog = [];
+  const missingCoaching = [];
   if (chk) {
     for (const item of chk.items) {
       if (currentAssessment.scores[item.id] === 1) {
+        const coachingGiven = document.getElementById('cn-coach-' + item.id)?.value.trim() || '';
+        if (!coachingGiven) missingCoaching.push(item.text);
         coachingLog.push({
           itemId: item.id,
           itemText: item.text,
           itemType: item.type,
           observation:    document.getElementById('cn-obs-'   + item.id)?.value.trim() || '',
-          coachingGiven:  document.getElementById('cn-coach-' + item.id)?.value.trim() || '',
+          coachingGiven:  coachingGiven,
           workerResponse: document.getElementById('cn-resp-'  + item.id)?.value.trim() || '',
           agreedAction:   document.getElementById('cn-action-'+ item.id)?.value.trim() || '',
         });
       }
     }
+  }
+  // v4.0: Block save if any score-1 items are missing coaching notes
+  if (missingCoaching.length > 0) {
+    alert('Coaching notes required.\n\nThe following items were scored 1 (Competent with Coaching) but have no coaching description:\n\n• ' + missingCoaching.join('\n• ') + '\n\nPlease go back and complete the "Coaching Given" field for each item scored 1.');
+    return;
   }
   currentAssessment.coachingLog = coachingLog;
   currentAssessment.assessorName = ASSESSORS.find(a=>a.id===currentAssessment.assessorId)?.name || '';
@@ -2695,11 +2774,19 @@ async function toggleDemo() {
 function syncToGoogleSheets(assessment) {
   const url = SETTINGS.gsUrl;
   if (!url) return;
+  // v4.0: Include follow-up reference if present
+  if (window._followUpOf) {
+    assessment.followUpOf = window._followUpOf;
+    window._followUpOf = null; // Clear after use
+    const banner = document.getElementById('assess-followup-banner');
+    if (banner) banner.style.display = 'none';
+  }
   fetch(url, { method:'POST', body: JSON.stringify(assessment), headers:{'Content-Type':'application/json'} })
     .then(r => r.json())
     .then(d => {
       if (d.status === 'ok') {
         console.log('VOCGuard GS sync OK:', d.id);
+        if (d.closedOriginal) console.log('VOCGuard: closed original DR');
         if (d.filedTo) console.log('VOCGuard CAMS filed:', d.filedTo);
       }
     })
