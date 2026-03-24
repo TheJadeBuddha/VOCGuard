@@ -347,7 +347,7 @@ table.data-table tr:hover td { background: #f8fafd; }
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;align-items:center">
         <button class="btn btn-primary" id="btn-start-assess" onclick="startAssessment()" data-i18n="assess.beginbtn">Begin Assessment →</button>
         <button class="btn btn-outline" onclick="printBlankForm()" data-i18n="assess.printblank">🖨️ Print Blank Form</button>
-        <label class="btn btn-outline" style="cursor:pointer;margin:0" data-i18n="assess.uploadscanned">📷 Upload Scanned Form
+        <label class="btn btn-outline" style="cursor:pointer;margin:0"><span data-i18n="assess.uploadscanned">📷 Upload Scanned Form</span>
           <input type="file" accept="image/*" style="display:none" onchange="handleScanUpload(this)">
         </label>
       </div>
@@ -402,12 +402,12 @@ table.data-table tr:hover td { background: #f8fafd; }
       <p style="font-size:13px;color:#555;margin-bottom:16px" data-i18n="scan.step1desc">Take a photo of a completed paper VOC form or upload a scan. The QR code printed on the form will auto-fill the assessment metadata.</p>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-        <label class="btn btn-primary" style="cursor:pointer" data-i18n="scan.takephoto">
-          📷 Take Photo
+        <label class="btn btn-primary" style="cursor:pointer">
+          <span data-i18n="scan.takephoto">📷 Take Photo</span>
           <input type="file" accept="image/*" capture="environment" id="scan-camera" style="display:none" onchange="handleScanFile(this)">
         </label>
-        <label class="btn btn-outline" style="cursor:pointer" data-i18n="scan.uploadimage">
-          📁 Upload Image
+        <label class="btn btn-outline" style="cursor:pointer">
+          <span data-i18n="scan.uploadimage">📁 Upload Image</span>
           <input type="file" accept="image/*" id="scan-upload" style="display:none" onchange="handleScanFile(this)">
         </label>
       </div>
