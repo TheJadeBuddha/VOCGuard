@@ -965,15 +965,26 @@ async function loadLiveData() {
   return false;
 }
 
-// Initialise register — tries live first, falls back to demo
+// Initialise register — respects persisted demo/live preference
 async function initRegister() {
-  const loaded = await loadLiveData();
-  if (!loaded) {
+  if (SETTINGS.demoMode) {
+    // User has explicitly chosen demo mode
     REGISTER = generateDemoData();
-    SETTINGS.demoMode = true;
-    console.log('VOCGuard: using demo data (' + REGISTER.length + ' assessments)');
+    console.log('VOCGuard: demo mode active (' + REGISTER.length + ' demo assessments)');
+  } else {
+    // Live mode — load from backend
+    const loaded = await loadLiveData();
+    if (!loaded && !SETTINGS.gsUrl) {
+      // No backend configured at all — fall back to demo as first-run experience
+      REGISTER = generateDemoData();
+      SETTINGS.demoMode = true;
+      console.log('VOCGuard: no backend configured, using demo data');
+    } else if (!loaded) {
+      // Backend configured but returned empty/error — stay in live mode with empty register
+      REGISTER = [];
+      console.log('VOCGuard: live mode, 0 assessments loaded');
+    }
   }
-  // Refresh dashboard after data loads
   if (typeof renderDashboard === 'function') renderDashboard();
 }
 
@@ -1962,7 +1973,10 @@ function destroyChart(id) {
 // ════════════════════════════════════════════════════════════════════════════
 // SETTINGS & GOOGLE SHEETS
 // ════════════════════════════════════════════════════════════════════════════
-const SETTINGS = { gsUrl: 'https://script.google.com/macros/s/AKfycbzucMOE2Rd_Ds58j_klDGJI-5gS68YtzHcn87rxkZlLmrINZ_pHLamYc0G1dhd48nHIgQ/exec', demoMode: true };
+const SETTINGS = {
+  gsUrl: 'https://script.google.com/macros/s/AKfycbzucMOE2Rd_Ds58j_klDGJI-5gS68YtzHcn87rxkZlLmrINZ_pHLamYc0G1dhd48nHIgQ/exec',
+  demoMode: localStorage.getItem('vocguard_demo') === 'on'  // Default: live mode (false)
+};
 
 // ════════════════════════════════════════════════════════════════════════════
 // MULTI-LANGUAGE SUPPORT
@@ -2657,6 +2671,7 @@ async function toggleDemo() {
       : 'No backend URL configured. The register will be empty until assessments are saved. Continue?';
     if (confirm(msg)) {
       SETTINGS.demoMode = false;
+      localStorage.setItem('vocguard_demo', 'off');
       const loaded = await loadLiveData();
       if (!loaded) {
         // No backend or no data — show only real (non-demo) records
@@ -2669,6 +2684,7 @@ async function toggleDemo() {
   } else {
     // Switch to demo data
     SETTINGS.demoMode = true;
+    localStorage.setItem('vocguard_demo', 'on');
     // Preserve any real assessments, prepend demo
     const realRecords = REGISTER.filter(a => !a.isDemo);
     REGISTER = [...generateDemoData(), ...realRecords];
