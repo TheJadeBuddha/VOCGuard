@@ -252,13 +252,13 @@ table.data-table tr:hover td { background: #f8fafd; }
 
 <div id="nav">
   <button class="nav-btn active" data-page="dashboard" data-i18n="nav.dashboard">📊 Dashboard</button>
-  <button class="nav-btn" data-page="assess" data-i18n="nav.newassessment">✅ New Assessment</button>
-  <button class="nav-btn" data-page="scan" data-i18n="nav.scanform">📷 Scan Form</button>
-  <button class="nav-btn" data-page="register" data-i18n="nav.register">📋 Register</button>
   <button class="nav-btn" data-page="heatmap" data-i18n="nav.heatmap">🗺️ Fleet Heat Map</button>
-  <button class="nav-btn" data-page="individual" data-i18n="nav.individual">👤 Individual</button>
   <button class="nav-btn" data-page="gaps" data-i18n="nav.gapanalysis">⚠️ Gap Analysis</button>
   <button class="nav-btn" data-page="assessors" data-i18n="nav.assessorreport">🔍 Assessor Report</button>
+  <button class="nav-btn" data-page="individual" data-i18n="nav.individual">👤 Individual</button>
+  <button class="nav-btn" data-page="assess" data-i18n="nav.newassessment">✅ New Assessment</button>
+  <button class="nav-btn" data-page="scan" data-i18n="nav.scanform">📷 Scan Form</button>
+  <button class="nav-btn" data-page="downloads" data-i18n="nav.downloads">📥 Downloads</button>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 10px;border-left:1px solid rgba(255,255,255,0.2)">
     <label for="lang-select" style="color:rgba(255,255,255,0.75);font-size:12px;white-space:nowrap">Language:</label>
     <select id="lang-select" style="padding:4px 8px;border-radius:4px;border:1px solid #bbb;background:#fff;color:#333;font-size:12px;cursor:pointer">
@@ -502,6 +502,33 @@ table.data-table tr:hover td { background: #f8fafd; }
         <button class="btn btn-success" onclick="scanSaveAssessment()" data-i18n="btn.saveassessment">Save Assessment</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ═══ DOWNLOADS ═══ -->
+<div id="page-downloads" class="page">
+  <div class="section-title">📥 VOC Form Downloads</div>
+  <div class="card" style="max-width:800px">
+    <p style="font-size:13px;color:#555;margin-bottom:16px">Download blank VOC assessment checklists for printing. Each form includes a QR code section for easy digital upload after completion.</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:90px">Form ID</th><th>Activity</th><th style="width:120px">Revision</th><th style="width:120px">Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>CHK-001</td><td>Manual Handling</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-001')">Print Form</button></td></tr>
+        <tr><td>CHK-002</td><td>Working at Heights</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-002')">Print Form</button></td></tr>
+        <tr><td>CHK-003</td><td>Hand & Finger Safety / Line of Fire / Pinch Points</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-003')">Print Form</button></td></tr>
+        <tr><td>CHK-004</td><td>Mechanical Lifting / Crane & Rigging Operations</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-004')">Print Form</button></td></tr>
+        <tr><td>CHK-005</td><td>Confined Space Entry</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-005')">Print Form</button></td></tr>
+        <tr><td>CHK-006</td><td>DROPS Prevention (Dropped Objects)</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-006')">Print Form</button></td></tr>
+        <tr><td>CHK-007</td><td>Isolation & Lockout/Tagout (LOTO)</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-007')">Print Form</button></td></tr>
+        <tr><td>CHK-008</td><td>H2S Emergency Response</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-008')">Print Form</button></td></tr>
+        <tr><td>CHK-009</td><td>PTW Application (Worker Perspective)</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-009')">Print Form</button></td></tr>
+        <tr><td>CHK-010</td><td>Heat Stress & Heat Illness Prevention</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-010')">Print Form</button></td></tr>
+        <tr><td>CHK-011</td><td>Journey Management & Safe Driving</td><td>Rev 01</td><td><button class="btn btn-sm btn-outline" onclick="downloadForm('CHK-011')">Print Form</button></td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:11px;color:#888;margin-top:12px">Forms open in a new tab ready for printing. Each form includes a blank QR code area — to generate a pre-filled QR code, use the <strong>New Assessment</strong> tab and click <strong>Print Blank Form</strong> after selecting the assessor, worker, and activity.</p>
   </div>
 </div>
 
@@ -1346,7 +1373,7 @@ function startFollowUp(originalId, name, empId, rig, activityId, role) {
   if (typeEl) typeEl.value = 'Follow-Up';
   // Pre-fill rig first (triggers assessee dropdown population)
   const rigEl = document.getElementById('setup-rig');
-  if (rigEl) { rigEl.value = rig; populateAssesseeDropdown(); }
+  if (rigEl) { rigEl.value = rig; populateAssessorDropdown(); populateAssesseeDropdown(); }
   // Select assessee from dropdown by empId
   const selEl = document.getElementById('setup-assessee-select');
   if (selEl) {
@@ -1919,37 +1946,27 @@ function onAssesseeSelect(sel) {
 let PMR_PERSONNEL = [{"id": "BHDC-P-001", "name": "Kaleemullah Jan", "rig": "Rig 67", "role": "Senior Toolpusher"}, {"id": "BHDC-P-002", "name": "Odibo Ufuoma Okiemute", "rig": "Rig 67", "role": "Senior Toolpusher"}, {"id": "BHDC-P-003", "name": "Manas Ranjan Panda", "rig": "Rig 67", "role": "Night Toolpusher"}, {"id": "BHDC-P-004", "name": "Muneer Ahmed", "rig": "Rig 67", "role": "Night Toolpusher"}, {"id": "BHDC-P-005", "name": "Muhammad Daud", "rig": "Rig 67", "role": "Driller"}, {"id": "BHDC-P-006", "name": "Shakil Ahmed", "rig": "Rig 67", "role": "Driller"}, {"id": "BHDC-P-007", "name": "Taimoor Shahzad", "rig": "Rig 67", "role": "Driller"}, {"id": "BHDC-P-008", "name": "Abdul Kareem", "rig": "Rig 67", "role": "Assistant Driller"}, {"id": "BHDC-P-009", "name": "Hari Kumar Mallireddy", "rig": "Rig 67", "role": "Assistant Driller"}, {"id": "BHDC-P-010", "name": "Adil Ijaz", "rig": "Rig 67", "role": "Derrickman"}, {"id": "BHDC-P-011", "name": "Anis Mohammed Abdullahi", "rig": "Rig 67", "role": "Derrickman"}, {"id": "BHDC-P-012", "name": "Hanumantha Rao Seelaboina", "rig": "Rig 67", "role": "Derrickman"}, {"id": "BHDC-P-013", "name": "Mohammad Waseem Akram", "rig": "Rig 67", "role": "Derrickman"}, {"id": "BHDC-P-014", "name": "Muhammad Waqas Nazar Hussain", "rig": "Rig 67", "role": "Derrickman"}, {"id": "BHDC-P-015", "name": "Aamir Hayat Muhammad Hayat", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-016", "name": "Aqeel Hassan", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-017", "name": "Dilawar Abid Muhammad Abid Hussain", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-018", "name": "Fahad Ali Khan", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-019", "name": "Farhat Mehmood", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-020", "name": "Mohsin Ali Raza", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-021", "name": "Muhammad Shahzad Amir Khan", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-022", "name": "Saquib Shaikh Mujeeb", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-023", "name": "Saquib Shaikh Mujeeb Shaikh Kareem", "rig": "Rig 67", "role": "Floorman"}, {"id": "BHDC-P-024", "name": "Ahamed Safwan Sayyed", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-025", "name": "Eldho Jose Jose Thomas", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-026", "name": "Lijeesh Muchitta Parambath", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-027", "name": "Md Saifur Rahman", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-028", "name": "Mohammad Quaseem Akhtar", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-029", "name": "Mohammad Sohail Naseemullah Ansari", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-030", "name": "Muhammad Sohail Malik", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-031", "name": "Sagaya John Paul", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-032", "name": "Sahimraja Navrojali Mirza", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-033", "name": "Umar Farooq", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-034", "name": "Usama Hassan Hashmi", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-035", "name": "Usama Tariq", "rig": "Rig 67", "role": "Roustabout"}, {"id": "BHDC-P-036", "name": "Asad Abbas", "rig": "Rig 67", "role": "Chief Mechanic"}, {"id": "BHDC-P-037", "name": "Xavier Fernandes", "rig": "Rig 67", "role": "Chief Mechanic"}, {"id": "BHDC-P-038", "name": "Mohammad Tahir Ansari", "rig": "Rig 67", "role": "Assistant Mechanic"}, {"id": "BHDC-P-039", "name": "Muhammad Ali Arif", "rig": "Rig 67", "role": "Assistant Mechanic"}, {"id": "BHDC-P-040", "name": "Sameer Abubakkar Mansuri", "rig": "Rig 67", "role": "Assistant Mechanic"}, {"id": "BHDC-P-041", "name": "Mikhail Bolgrabskiy", "rig": "Rig 67", "role": "Electrician"}, {"id": "BHDC-P-042", "name": "Sadaqat Mehmood", "rig": "Rig 67", "role": "Electrician"}, {"id": "BHDC-P-043", "name": "Anish Joseph", "rig": "Rig 67", "role": "Electronics Technician"}, {"id": "BHDC-P-044", "name": "Hemanth Sai Pediredla", "rig": "Rig 67", "role": "Electronics Technician"}, {"id": "BHDC-P-045", "name": "Tariq Nawaz Imtiaz Khan", "rig": "Rig 67", "role": "Assistant Electrician"}, {"id": "BHDC-P-046", "name": "Abderrahmane Bekkar", "rig": "Rig 67", "role": "HSE Specialist"}, {"id": "BHDC-P-047", "name": "Hassan Abbas", "rig": "Rig 67", "role": "HSE Specialist"}, {"id": "BHDC-P-048", "name": "Ramesh Durai", "rig": "Rig 67", "role": "HSE Specialist"}, {"id": "BHDC-P-049", "name": "Tayyab Ali Muhammad Hayat", "rig": "Rig 67", "role": "HSE Specialist"}, {"id": "BHDC-P-050", "name": "Aakash Hassan", "rig": "Rig 67", "role": "HSE Specialist"}, {"id": "BHDC-P-051", "name": "Muhammad Sami Waqas Malik Haq", "rig": "Rig 67", "role": "HSE Specialist"}, {"id": "BHDC-P-052", "name": "Jijo James", "rig": "Rig 67", "role": "Medic"}, {"id": "BHDC-P-053", "name": "Sajan Varghese", "rig": "Rig 67", "role": "Medic"}, {"id": "BHDC-P-054", "name": "Qaiser Khan", "rig": "Rig 68", "role": "Senior Toolpusher"}, {"id": "BHDC-P-055", "name": "Tahir Abbas", "rig": "Rig 68", "role": "Senior Toolpusher"}, {"id": "BHDC-P-056", "name": "Mahmoud Berkane", "rig": "Rig 68", "role": "Night Toolpusher"}, {"id": "BHDC-P-057", "name": "Usman Rafique", "rig": "Rig 68", "role": "Night Toolpusher"}, {"id": "BHDC-P-058", "name": "Awais Maqsood", "rig": "Rig 68", "role": "Driller"}, {"id": "BHDC-P-059", "name": "Dilawer Abbas Muhammad Yaqoob", "rig": "Rig 68", "role": "Driller"}, {"id": "BHDC-P-060", "name": "Muhammad Jehangir", "rig": "Rig 68", "role": "Driller"}, {"id": "BHDC-P-061", "name": "Shahid Iqbal Sohail Akhtar", "rig": "Rig 68", "role": "Driller"}, {"id": "BHDC-P-062", "name": "Ibrar Ahmed", "rig": "Rig 68", "role": "Assistant Driller"}, {"id": "BHDC-P-063", "name": "Mohammed Iliyas Ahmed", "rig": "Rig 68", "role": "Assistant Driller"}, {"id": "BHDC-P-064", "name": "Muhammad Irshad Noor Jamal", "rig": "Rig 68", "role": "Assistant Driller"}, {"id": "BHDC-P-065", "name": "Muhammad Shaheryar Abbas Pervez Raja", "rig": "Rig 68", "role": "Assistant Driller"}, {"id": "BHDC-P-066", "name": "Shehzad Iqbal", "rig": "Rig 68", "role": "Assistant Driller"}, {"id": "BHDC-P-067", "name": "Ahmed Abbas Fateh Khan", "rig": "Rig 68", "role": "Derrickman"}, {"id": "BHDC-P-068", "name": "Jeyson Maria Sangeethan", "rig": "Rig 68", "role": "Derrickman"}, {"id": "BHDC-P-069", "name": "Mohammedavesh Abdulhamid Shaikh", "rig": "Rig 68", "role": "Derrickman"}, {"id": "BHDC-P-070", "name": "Rahimath Ali Mohammad", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-071", "name": "Abdul Qadir", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-072", "name": "Ali Hassan Arshad Saleem", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-073", "name": "Anto Kinston Nepolean", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-074", "name": "Basit Ali", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-075", "name": "Mohammad Irfan", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-076", "name": "Mohammad Sakir Suleman Shaikh", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-077", "name": "Muhammad Tayyab Khan", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-078", "name": "Rameez Abbas", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-079", "name": "Sravana Kumar Gurugupelli", "rig": "Rig 68", "role": "Floorman"}, {"id": "BHDC-P-080", "name": "Abdullah", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-081", "name": "Ali Haider", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-082", "name": "Faraz Ahmed Nazakat Ali Khan", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-083", "name": "Harikrishnan Vadakke Parambil", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-084", "name": "Mahammd Sohil Mahammad Gani Shekh", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-085", "name": "Martin Mwangi Gaichuhie", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-086", "name": "Mirza Aadil Baig", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-087", "name": "Mogahed Hassan Salih hassan", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-088", "name": "Muhammad Farhan Pervaiz", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-089", "name": "Muhammad Hassan", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-090", "name": "Muhammad Hassan Nazar Hussain", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-091", "name": "Muneeb Ahmed Khan", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-092", "name": "Salaiman Mumtaz", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-093", "name": "Salaiman Mumtaz Muhammad Mumtaz", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-094", "name": "Saqlain Abbas", "rig": "Rig 68", "role": "Roustabout"}, {"id": "BHDC-P-095", "name": "Praveen Patrick Vas", "rig": "Rig 68", "role": "Chief Mechanic"}, {"id": "BHDC-P-096", "name": "Sujith Vengilat", "rig": "Rig 68", "role": "Chief Mechanic"}, {"id": "BHDC-P-097", "name": "Firojkhan Nasirkhan Pathan", "rig": "Rig 68", "role": "Assistant Mechanic"}, {"id": "BHDC-P-098", "name": "Muhammad Nadeem Muhammad Ibrahim", "rig": "Rig 68", "role": "Assistant Mechanic"}, {"id": "BHDC-P-099", "name": "Shahzad Hussain Jaffar Hussain", "rig": "Rig 68", "role": "Assistant Mechanic"}, {"id": "BHDC-P-100", "name": "Amar Deep", "rig": "Rig 68", "role": "Electrician"}, {"id": "BHDC-P-101", "name": "Khurram Shahzad", "rig": "Rig 68", "role": "Electrician"}, {"id": "BHDC-P-102", "name": "Muhammad Junaid", "rig": "Rig 68", "role": "Electronics Technician"}, {"id": "BHDC-P-103", "name": "Zia Ul Hassan", "rig": "Rig 68", "role": "Electronics Technician"}, {"id": "BHDC-P-104", "name": "Atif Iqbal", "rig": "Rig 68", "role": "Assistant Electrician"}, {"id": "BHDC-P-105", "name": "Badar Ali", "rig": "Rig 68", "role": "Assistant Electrician"}, {"id": "BHDC-P-106", "name": "Mohammad Salahuddin Mohammad Tajuddin", "rig": "Rig 68", "role": "Assistant Electrician"}, {"id": "BHDC-P-107", "name": "Sarath Kunnathodi", "rig": "Rig 68", "role": "Assistant Electrician"}, {"id": "BHDC-P-108", "name": "Simon Abraham", "rig": "Rig 68", "role": "Assistant Electrician"}, {"id": "BHDC-P-109", "name": "Niyaz Murtuza Ansari", "rig": "Rig 68", "role": "Welder Fabricator"}, {"id": "BHDC-P-110", "name": "Saquib Farooq Haji Ghulam Farooq", "rig": "Rig 68", "role": "Welder Fabricator"}, {"id": "BHDC-P-111", "name": "Shakir Abbas", "rig": "Rig 68", "role": "Welder Fabricator"}, {"id": "BHDC-P-112", "name": "Amjad Hussain", "rig": "Rig 68", "role": "HSE Specialist"}, {"id": "BHDC-P-113", "name": "Asmat Nawaz", "rig": "Rig 68", "role": "HSE Specialist"}, {"id": "BHDC-P-114", "name": "Aneesh Thomas", "rig": "Rig 68", "role": "Medic"}, {"id": "BHDC-P-115", "name": "Muthu Sakthi", "rig": "Rig 68", "role": "Medic"}, {"id": "BHDC-P-116", "name": "Irfan Mehmood Muhammad Aslam", "rig": "Rig 117", "role": "Senior Toolpusher"}, {"id": "BHDC-P-117", "name": "Qadeer Hussain Ghulam Hussain", "rig": "Rig 117", "role": "Senior Toolpusher"}, {"id": "BHDC-P-118", "name": "Ghayyur Abbas Shaukat Ali Khan", "rig": "Rig 117", "role": "Night Toolpusher"}, {"id": "BHDC-P-119", "name": "Mool Chand Paras Mal Soni", "rig": "Rig 117", "role": "Night Toolpusher"}, {"id": "BHDC-P-120", "name": "Mohammdyusuf Shaukathusen Saiyad", "rig": "Rig 117", "role": "Driller"}, {"id": "BHDC-P-121", "name": "Pratik Chandrakant Mohite", "rig": "Rig 117", "role": "Driller"}, {"id": "BHDC-P-122", "name": "Tejinder Pal Singh", "rig": "Rig 117", "role": "Driller"}, {"id": "BHDC-P-123", "name": "Jawed Ali Ahmed", "rig": "Rig 117", "role": "Assistant Driller"}, {"id": "BHDC-P-124", "name": "Mohmadsahil Mohamadhanif Rangrej", "rig": "Rig 117", "role": "Assistant Driller"}, {"id": "BHDC-P-125", "name": "Muhammad Usman Muhammad Arif", "rig": "Rig 117", "role": "Assistant Driller"}, {"id": "BHDC-P-126", "name": "Vishnugiri Vinodgiri Goswami", "rig": "Rig 117", "role": "Assistant Driller"}, {"id": "BHDC-P-127", "name": "Mirja Aftab Beg", "rig": "Rig 117", "role": "Derrickman"}, {"id": "BHDC-P-128", "name": "Pankajkumar Vitthalbhai Chavda", "rig": "Rig 117", "role": "Derrickman"}, {"id": "BHDC-P-129", "name": "Sabbirbhai Abdulbhai Limbadiya", "rig": "Rig 117", "role": "Derrickman"}, {"id": "BHDC-P-130", "name": "Ahsan Shafique Muhammad Shafique", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-131", "name": "Chellaraja Thangaiyan Thangaiyan", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-132", "name": "Durga Prasad Peddi Raju Katakamsetti", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-133", "name": "Karan Singh Padam Singh", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-134", "name": "Oman Hassan", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-135", "name": "Riyaj Mahmadhanif Rangrej", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-136", "name": "Soosai Rayappan Antony Pitchai", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-137", "name": "Tahirhusen Tajjamalhusen Saiyed", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-138", "name": "Umar Hayat Muhammad Sarfraz", "rig": "Rig 117", "role": "Floorman"}, {"id": "BHDC-P-139", "name": "Harsur Avddan Gadhavi", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-140", "name": "Imran Akhtar Akhtar Hussain", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-141", "name": "Md Shahid Qaisar", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-142", "name": "Mohammad Faiyaz Ashraf Neyaz Ashraf", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-143", "name": "Mohammed Arshad Khaja", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-144", "name": "Muhammad Asim Afzal Khan Afzal", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-145", "name": "Muhammad Zain Ul Hassan Nawaz", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-146", "name": "Murugesan Ganesan Ganesan", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-147", "name": "Sameer Mohammed Yousuf Mohammed", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-148", "name": "Shehzad Ali Khan Fateh Khan", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-149", "name": "Zeeshan Haider Sharaf Khan", "rig": "Rig 117", "role": "Roustabout"}, {"id": "BHDC-P-150", "name": "Ahamad Bava Abdul Raheeman", "rig": "Rig 117", "role": "Chief Mechanic"}, {"id": "BHDC-P-151", "name": "Khader Basha Babulal Babulal", "rig": "Rig 117", "role": "Chief Mechanic"}, {"id": "BHDC-P-152", "name": "Sajjad Hussain Qaisarani", "rig": "Rig 117", "role": "Mechanical Technician"}, {"id": "BHDC-P-153", "name": "Soyebkhan Muzaffarkhan Ghori", "rig": "Rig 117", "role": "Mechanical Technician"}, {"id": "BHDC-P-154", "name": "Tajamal Abbas", "rig": "Rig 117", "role": "Mechanical Technician"}, {"id": "BHDC-P-155", "name": "Faizan Bin Ashraf Muhammad Ashraf", "rig": "Rig 117", "role": "Electrician"}, {"id": "BHDC-P-156", "name": "Rajat Shushilkumar Wellington", "rig": "Rig 117", "role": "Electrician"}, {"id": "BHDC-P-157", "name": "Ali Raza Muhammad Amin", "rig": "Rig 117", "role": "HSE Specialist"}, {"id": "BHDC-P-158", "name": "Hamza Feguiri", "rig": "Rig 117", "role": "HSE Specialist"}, {"id": "BHDC-P-159", "name": "Karunesh Kumar Madan Mohan Panday", "rig": "Rig 117", "role": "HSE Specialist"}, {"id": "BHDC-P-160", "name": "Midhun Michael Michael Poulose", "rig": "Rig 117", "role": "HSE Specialist"}, {"id": "BHDC-P-161", "name": "Jiby Chacko Varghese", "rig": "Rig 117", "role": "Medic"}, {"id": "BHDC-P-162", "name": "Ushad Thankasseryil Unni", "rig": "Rig 117", "role": "Medic"}, {"id": "BHDC-P-163", "name": "Stephen Kottackal Pappu", "rig": "Rig 118", "role": "Senior Toolpusher"}, {"id": "BHDC-P-164", "name": "Prabhat Ranjan Vani Bilas", "rig": "Rig 118", "role": "Night Toolpusher"}, {"id": "BHDC-P-165", "name": "Satyanarayana Dhommeti", "rig": "Rig 118", "role": "Night Toolpusher"}, {"id": "BHDC-P-166", "name": "Imran Abbas Banaras Khan", "rig": "Rig 118", "role": "Driller"}, {"id": "BHDC-P-167", "name": "Krishna Sunil Chourasia", "rig": "Rig 118", "role": "Driller"}, {"id": "BHDC-P-168", "name": "Muzammil Shahbaz Shahbaz Ahmed", "rig": "Rig 118", "role": "Driller"}, {"id": "BHDC-P-169", "name": "Surya Rama Chandra Shashidhar Kasturi", "rig": "Rig 118", "role": "Driller"}, {"id": "BHDC-P-170", "name": "Ahtazaz Ahsan Muhammad Ameer", "rig": "Rig 118", "role": "Assistant Driller"}, {"id": "BHDC-P-171", "name": "Jagadeswara Reddy Satti Satti", "rig": "Rig 118", "role": "Assistant Driller"}, {"id": "BHDC-P-172", "name": "Syed Jawad Hassan Naqvi Shah", "rig": "Rig 118", "role": "Assistant Driller"}, {"id": "BHDC-P-173", "name": "Anto Jefrin Johnson Daniel", "rig": "Rig 118", "role": "Derrickman"}, {"id": "BHDC-P-174", "name": "Arslan Farooq Muhammad Farooq", "rig": "Rig 118", "role": "Derrickman"}, {"id": "BHDC-P-175", "name": "Nagabhushan Shankar Rao", "rig": "Rig 118", "role": "Derrickman"}, {"id": "BHDC-P-176", "name": "Adnan Ali Daryafat Ali", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-177", "name": "Almaskhan Asarfkhan Pathan", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-178", "name": "Bestin Kulangara Raju", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-179", "name": "Dinesh Khamma Ram Bishnoi", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-180", "name": "Libin Wilson Varghese", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-181", "name": "Mahammadnazim Magdumali Saiyed", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-182", "name": "Mayur Dinesh Bhatt", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-183", "name": "Noman Zafar Zafar Iqbal", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-184", "name": "Usman Haider Zafar Iqbal", "rig": "Rig 118", "role": "Floorman"}, {"id": "BHDC-P-185", "name": "Ahmad Pasha Mohammad Hussain Mohammad", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-186", "name": "Abderrazak Dahoui", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-187", "name": "Akaas Abid", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-188", "name": "Daniel Ullas Karkada John Karkada", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-189", "name": "Farhad Ali Muhammad Iqbal", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-190", "name": "Imran Nazeer Ahmed Ahmed Bava", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-191", "name": "Linto Shajan", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-192", "name": "Mohammed Almohammed", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-193", "name": "Pranav Raj Panachoor Vadakkathil Prithvirajan", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-194", "name": "Sam Daniel Ignatius", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-195", "name": "Shimmy Varghese Varghese", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-196", "name": "Sujit Sarkar Subhash Sarkar", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-197", "name": "Umair Iqbal Muhammad Iqbal", "rig": "Rig 118", "role": "Roustabout"}, {"id": "BHDC-P-198", "name": "Azharudeen Ansar Ali Ansar Ali", "rig": "Rig 118", "role": "Chief Mechanic"}, {"id": "BHDC-P-199", "name": "Rishikesh Ram Raj Singh", "rig": "Rig 118", "role": "Chief Mechanic"}, {"id": "BHDC-P-200", "name": "Behzad Rafi Rafi Azhar Sheikh", "rig": "Rig 118", "role": "Mechanical Technician"}, {"id": "BHDC-P-201", "name": "Prasanna Singaravelu Singaravelu", "rig": "Rig 118", "role": "Mechanical Technician"}, {"id": "BHDC-P-202", "name": "Zaeem Ul Hassan Khadim Hussain", "rig": "Rig 118", "role": "Mechanical Technician"}, {"id": "BHDC-P-203", "name": "Maqsood Ahmed Bahadar Khan", "rig": "Rig 118", "role": "Electrician"}, {"id": "BHDC-P-204", "name": "Mazahir Kutbuddin Mithaiwala", "rig": "Rig 118", "role": "Electrician"}, {"id": "BHDC-P-205", "name": "Jigneshkumar Natvarlal Patel", "rig": "Rig 118", "role": "HSE Specialist"}, {"id": "BHDC-P-206", "name": "Meiyappan Muthuramalingam Muthuramalingam", "rig": "Rig 118", "role": "HSE Specialist"}, {"id": "BHDC-P-207", "name": "Pankaj Dalpatbhai Maganbhai Nayee", "rig": "Rig 118", "role": "HSE Specialist"}, {"id": "BHDC-P-208", "name": "Vikash Shukla", "rig": "Rig 118", "role": "HSE Specialist"}, {"id": "BHDC-P-209", "name": "Jijo Joseph Kattampallil", "rig": "Rig 118", "role": "Medic"}, {"id": "BHDC-P-210", "name": "Saju Skariah Thomas", "rig": "Rig 118", "role": "Medic"}, {"id": "BHDC-P-211", "name": "Mohammad Shadab Fahmi Atikur Rahman", "rig": "Shared", "role": "Welder Fabricator"}, {"id": "BHDC-P-212", "name": "Qasim Abbas Nazar Muhammad", "rig": "Shared", "role": "Welder Fabricator"}];
 
 function initAssessSetup() {
-  const assEl = document.getElementById('setup-assessor');
-  // Anyone can be an assessor — populate from full PMR, grouped by rig
-  const byRig = {};
-  for (const p of PMR_PERSONNEL) {
-    const r = p.rig || 'Other';
-    if (!byRig[r]) byRig[r] = [];
-    byRig[r].push(p);
-  }
-  let opts = '<option value="">Select assessor...</option>';
-  for (const rig of RIGS) {
-    if (!byRig[rig]) continue;
-    opts += `<optgroup label="${rig}">` +
-      byRig[rig].map(p => `<option value="${p.id}" data-name="${p.name}" data-role="${p.role}">${p.name} — ${p.role}</option>`).join('') +
-      '</optgroup>';
-  }
-  if (byRig['Other']) {
-    opts += `<optgroup label="Other">` +
-      byRig['Other'].map(p => `<option value="${p.id}" data-name="${p.name}" data-role="${p.role}">${p.name} — ${p.role}</option>`).join('') +
-      '</optgroup>';
-  }
-  assEl.innerHTML = opts;
-
   const rigEl = document.getElementById('setup-rig');
   rigEl.innerHTML = RIGS.map(r => `<option>${r}</option>`).join('');
-  rigEl.addEventListener('change', populateAssesseeDropdown);
+  rigEl.addEventListener('change', () => { populateAssessorDropdown(); populateAssesseeDropdown(); });
 
   const actEl = document.getElementById('setup-activity');
   actEl.innerHTML = ACTIVITIES.map(a => `<option value="${a.id}">${a.id} — ${a.name}</option>`).join('');
 
   document.getElementById('setup-date').value = todayStr();
+  populateAssessorDropdown();
   populateAssesseeDropdown();
+}
+
+function populateAssessorDropdown() {
+  const rig = document.getElementById('setup-rig').value;
+  const assEl = document.getElementById('setup-assessor');
+  const prev = assEl.value; // preserve selection if still valid
+  const filtered = PMR_PERSONNEL.filter(p => !rig || p.rig === rig);
+  assEl.innerHTML = '<option value="">Select assessor...</option>' +
+    filtered.map(p => `<option value="${p.id}" data-name="${p.name}" data-role="${p.role}">${p.name} — ${p.role}</option>`).join('');
+  // Restore previous selection if it's still in the filtered list
+  if (prev && filtered.some(p => p.id === prev)) assEl.value = prev;
 }
 
 function populateAssesseeDropdown() {
@@ -3099,7 +3116,128 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ════════════════════════════════════════════════════════════════════════════
-// PRINT BLANK FORM + QR CODE
+// DOWNLOADS TAB — PRINT BLANK FORM (no assessor/assessee pre-fill)
+// ════════════════════════════════════════════════════════════════════════════
+function downloadForm(actId) {
+  const chk = CHECKLISTS[actId];
+  if (!chk) { alert('No checklist data for activity ' + actId); return; }
+  const actName = ACTIVITIES.find(a => a.id === actId)?.name || actId;
+
+  const sections = { A:[], B:[], C:[] };
+  for (const item of chk.items) sections[item.section].push(item);
+  const SLABELS = {
+    A: 'SECTION A — KNOWLEDGE RETENTION (VERBAL)',
+    B: 'SECTION B — CRITICAL PHYSICAL BEHAVIOURS \u2605',
+    C: 'SECTION C — SUPPORTING BEHAVIOURS & SCENARIOS'
+  };
+
+  let itemsHTML = '';
+  for (const [sec, items] of Object.entries(sections)) {
+    if (!items.length) continue;
+    itemsHTML += `<div style="background:#1B3A5C;color:#fff;padding:5px 10px;font-size:10px;font-weight:bold;margin-top:10px">${SLABELS[sec]}</div>`;
+    for (const item of items) {
+      const bg = item.type==='critical' ? '#fff8f8' : item.type==='verbal' ? '#f8fcff' : '#fff';
+      const mark = item.type==='critical' ? '\u2605' : item.type==='verbal' ? 'V' : 'S';
+      const critHtml = item.type==='critical' ? '<div style="font-size:8px;font-weight:bold;color:#922b21;background:#fde8e8;display:inline-block;padding:1px 6px;border-radius:3px;margin-bottom:3px">★ CRITICAL BEHAVIOUR — Score 0 = DEVELOPMENT REQUIRED</div><br>' : '';
+      const notesHtml = item.notes ? '<div style="font-size:8.5px;color:#888;font-style:italic;margin-top:2px">' + item.notes + '</div>' : '';
+      itemsHTML += `<div style="border-bottom:1.5px solid #ddd;background:${bg}">
+        <div style="display:flex;align-items:flex-start;padding:5px 8px;gap:6px">
+          <div style="font-size:9px;color:#888;width:14px;padding-top:2px;flex-shrink:0;font-weight:bold">${mark}</div>
+          <div style="flex:1;font-size:10px;line-height:1.6">
+            ${critHtml}
+            ${item.text}
+            ${notesHtml}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;margin-left:4px">
+            <div style="display:flex;gap:3px">
+              <div style="width:22px;height:22px;border:1.5px solid #c0392b;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:#c0392b">0</div>
+              <div style="width:22px;height:22px;border:1.5px solid #e67e22;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:#e67e22">1</div>
+              <div style="width:22px;height:22px;border:1.5px solid #27ae60;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:#27ae60">2</div>
+            </div>
+            <div style="font-size:7.5px;color:#aaa">circle score</div>
+          </div>
+        </div>
+        <div style="background:#fffbf0;border-top:1px dashed #f0d070;padding:4px 8px 5px 28px">
+          <div style="font-size:8px;color:#856404;font-weight:bold;margin-bottom:3px">✏️ COACHING RECORD — <em style="font-weight:normal">Complete if score = 0 or 1 (mandatory for CwC)</em></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:8.5px">
+            <div>Observation (what was seen):<div style="border-bottom:1px solid #ccc;min-height:14px;margin-top:2px"></div></div>
+            <div>Coaching Given (what was said / demonstrated):<div style="border-bottom:1px solid #ccc;min-height:14px;margin-top:2px"></div></div>
+            <div>Worker Response:<div style="border-bottom:1px solid #ccc;min-height:14px;margin-top:2px"></div></div>
+            <div>Agreed Action / Follow-up:<div style="border-bottom:1px solid #ccc;min-height:14px;margin-top:2px"></div></div>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+
+  const formHTML = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:Arial,sans-serif; padding:14px; }
+@page { size:A4; margin:10mm; }
+@media print { .no-print { display:none !important; } }
+.hdr { background:#1B3A5C; color:#fff; padding:8px 12px; border-radius:4px 4px 0 0; display:flex; justify-content:space-between; align-items:center; }
+.meta { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; padding:8px 10px; background:#f4f6f9; border:1px solid #ddd; border-top:none; }
+.mc { font-size:10px; } .mc .lbl { font-size:8.5px; color:#666; margin-bottom:1px; }
+</style></head><body>
+<div class="hdr">
+  <div>
+    <div style="font-size:13px;font-weight:bold">VOCGuard — Verification of Competency Assessment</div>
+    <div style="font-size:9.5px;opacity:0.8">BHDC HSE-MS | ${actId} — ${actName} | Rev 01</div>
+  </div>
+</div>
+<div class="meta">
+  <div class="mc"><div class="lbl">ASSESSEE NAME</div>_____________________________</div>
+  <div class="mc"><div class="lbl">EMPLOYEE ID</div>________________</div>
+  <div class="mc"><div class="lbl">DATE</div>___________</div>
+  <div class="mc"><div class="lbl">RIG / LOCATION</div>________________</div>
+  <div class="mc"><div class="lbl">ROLE / TRADE</div>________________</div>
+  <div class="mc"><div class="lbl">ASSESSOR</div>________________</div>
+</div>
+<div style="padding:5px 10px;background:#fff3cd;border:1px solid #ffc107;border-top:none;font-size:9px">
+  <strong>SCORING:</strong> &nbsp;0 = Critical Gap (cannot perform unsupervised) &nbsp;\u2502&nbsp; 1 = Competent with Coaching Given &nbsp;\u2502&nbsp; 2 = Verified Competent &nbsp;\u2502&nbsp; <strong>\u2605 Any 0 on Critical Behaviour = DEVELOPMENT REQUIRED</strong>
+</div>
+<div style="background:#e8f4fd;border:1.5px solid #2E6DA4;border-radius:4px;padding:8px 10px;margin-top:8px;font-size:9px;line-height:1.8">
+  <strong style="font-size:10px">ASSESSOR INSTRUCTIONS</strong><br>
+  ① Score every item. Circle the number: <strong style="color:#c0392b">0 = Critical Gap</strong> &nbsp;|&nbsp; <strong style="color:#e67e22">1 = Coaching Given</strong> &nbsp;|&nbsp; <strong style="color:#27ae60">2 = Verified Competent</strong><br>
+  ② Items marked <strong>★ CRITICAL BEHAVIOUR</strong>: a score of 0 on <em>any</em> critical item = automatic <strong>DEVELOPMENT REQUIRED</strong>. No exceptions.<br>
+  ③ Score 0 or 1 on any item: the <strong>COACHING RECORD</strong> section below that item is <strong>mandatory</strong>. Document observation, coaching given, and agreed action.<br>
+  ④ CwC Outcome: assessee must sign confirming coaching was received and understood.<br>
+  ⑤ Development Required: worker is <strong>prohibited from performing this activity unsupervised</strong> until reassessment within 14 days.
+</div>
+${itemsHTML}
+<div style="display:flex;gap:10px;padding:8px;border:1.5px solid #1B3A5C;border-radius:4px;margin-top:10px">
+  <div style="font-weight:bold;font-size:10px;align-self:center;white-space:nowrap">OUTCOME:</div>
+  <div style="flex:1;padding:6px;border:1.5px solid #27ae60;border-radius:4px;text-align:center;font-size:10px;font-weight:bold;color:#27ae60">\u25a1 Verified Competent</div>
+  <div style="flex:1;padding:6px;border:1.5px solid #e67e22;border-radius:4px;text-align:center;font-size:10px;font-weight:bold;color:#e67e22">\u25a1 Competent with Coaching</div>
+  <div style="flex:1;padding:6px;border:1.5px solid #c0392b;border-radius:4px;text-align:center;font-size:10px;font-weight:bold;color:#c0392b">\u25a1 Development Required</div>
+</div>
+<div style="margin-top:8px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:9px;color:#666">
+  ASSESSOR NOTES / OBSERVATIONS<div style="height:40px;border-bottom:1px solid #eee;margin-top:4px"></div><div style="height:20px"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+  <div style="border:1px solid #ddd;padding:8px;border-radius:4px">
+    <div style="font-size:8.5px;color:#666">ASSESSOR SIGNATURE & DATE</div>
+    <div style="height:26px;border-bottom:1px solid #ccc;margin-top:8px"></div>
+  </div>
+  <div style="border:1px solid #ddd;padding:8px;border-radius:4px">
+    <div style="font-size:8.5px;color:#666">ASSESSEE SIGNATURE (I confirm this was conducted fairly)</div>
+    <div style="height:26px;border-bottom:1px solid #ccc;margin-top:8px"></div>
+  </div>
+</div>
+<div style="text-align:center;margin-top:8px;font-size:8px;color:#bbb">VOCGuard v2.1 | BHDC-HSE-TRN-PRO-001 Rev 04 | Generated: ${new Date().toLocaleDateString('en-GB')}</div>
+<button class="no-print" onclick="window.print()" style="margin-top:8px;padding:5px 14px;background:#1B3A5C;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px">🖨️ Print</button>
+<script>setTimeout(() => window.print(), 600);<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (win) { win.document.write(formHTML); win.document.close(); }
+  else { alert('Please allow pop-ups for this page to print forms.'); }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PRINT BLANK FORM + QR CODE (from New Assessment tab — pre-fills metadata)
 // ════════════════════════════════════════════════════════════════════════════
 function printBlankForm() {
   const actId = document.getElementById('setup-activity').value;
@@ -3112,7 +3250,7 @@ function printBlankForm() {
   const rig         = document.getElementById('setup-rig').value;
   const role        = document.getElementById('setup-role').value.trim();
   const actName     = ACTIVITIES.find(a => a.id === actId)?.name || actId;
-  const assessorName = assessorName(assessorId) || '(not selected)';
+  const assrName    = assessorName(assessorId) || '(not selected)';
   const chk         = CHECKLISTS[actId];
   if (!chk) { alert('No checklist data for this activity.'); return; }
 
@@ -3192,7 +3330,7 @@ body { font-family:Arial,sans-serif; padding:14px; }
   <div class="mc"><div class="lbl">DATE</div>${fmtDate}</div>
   <div class="mc"><div class="lbl">RIG / LOCATION</div>${rig}</div>
   <div class="mc"><div class="lbl">ROLE / TRADE</div>${role||'________________'}</div>
-  <div class="mc"><div class="lbl">ASSESSOR</div>${assessorName}</div>
+  <div class="mc"><div class="lbl">ASSESSOR</div>${assrName}</div>
 </div>
 <div style="padding:5px 10px;background:#fff3cd;border:1px solid #ffc107;border-top:none;font-size:9px">
   <strong>SCORING:</strong> &nbsp;0 = Critical Gap (cannot perform unsupervised) &nbsp;\u2502&nbsp; 1 = Competent with Coaching Given &nbsp;\u2502&nbsp; 2 = Verified Competent &nbsp;\u2502&nbsp; <strong>\u2605 Any 0 on Critical Behaviour = DEVELOPMENT REQUIRED</strong>
@@ -3219,7 +3357,7 @@ ${itemsHTML}
   <div style="border:1px solid #ddd;padding:8px;border-radius:4px">
     <div style="font-size:8.5px;color:#666">ASSESSOR SIGNATURE &amp; DATE</div>
     <div style="height:26px;border-bottom:1px solid #ccc;margin-top:8px"></div>
-    <div style="font-size:8.5px;color:#999;margin-top:3px">${assessorName}</div>
+    <div style="font-size:8.5px;color:#999;margin-top:3px">${assrName}</div>
   </div>
   <div style="border:1px solid #ddd;padding:8px;border-radius:4px">
     <div style="font-size:8.5px;color:#666">ASSESSEE SIGNATURE (I confirm this was conducted fairly)</div>
@@ -3396,11 +3534,11 @@ function handleScanFile(input) {
 }
 
 function showScanMetadata(payload) {
-  const assessorName = assessorName(payload.assessorId) || payload.assessorId;
+  const assrName = assessorName(payload.assessorId) || payload.assessorId;
   const actName = ACTIVITIES.find(a => a.id === payload.actId)?.name || payload.actId;
   scanData = {
     assessorId: payload.assessorId,
-    assessorName: assessorName,
+    assessorName: assrName,
     date: payload.date,
     assesseeName: payload.name,
     assesseeId: payload.empId,
@@ -3411,7 +3549,7 @@ function showScanMetadata(payload) {
   };
 
   const rows = [
-    ['Assessor', assessorName],
+    ['Assessor', assrName],
     ['Date', payload.date],
     ['Person Assessed', payload.name + (payload.empId ? ' (' + payload.empId + ')' : '')],
     ['Rig', payload.rig],
@@ -3454,12 +3592,12 @@ function scanProceedManual() {
     return;
   }
 
-  const assessorName = assessorName(assessorId) || '';
+  const assrName = assessorName(assessorId) || '';
   const actName = ACTIVITIES.find(a => a.id === actId)?.name || actId;
   const opt = assessee.options[assessee.selectedIndex];
 
   scanData = {
-    assessorId, assessorName, date,
+    assessorId, assessorName: assrName, date,
     assesseeName: opt.dataset?.name || opt.textContent.split(' (')[0] || '',
     assesseeId: assessee.value,
     rig, role,
