@@ -1720,7 +1720,31 @@ function renderAssessorReport() {
 
   // Get unique assessors who have actually conducted assessments (data-driven)
   // Handles both PMR IDs (BHDC-P-###) and legacy IDs (a01, a16, etc.)
+  // v4.1: Always resolves position from live PMR_PERSONNEL (CAMS Position)
   const assessorIds = [...new Set(base.map(a=>a.assessorId).filter(Boolean))];
+
+  // Helper: resolve current CAMS Position from PMR by name (always uses live data)
+  function resolvePosition(name) {
+    if (!name) return '';
+    // Exact name match
+    let m = PMR_PERSONNEL.find(p => p.name === name);
+    if (m && m.role) return m.role;
+    // Substring match
+    m = PMR_PERSONNEL.find(p => name.includes(p.name) || p.name.includes(name));
+    if (m && m.role) return m.role;
+    // First + last name match (handles abbreviated middle names)
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      const first = parts[0].toLowerCase(), last = parts[parts.length-1].toLowerCase();
+      m = PMR_PERSONNEL.find(p => {
+        const pp = p.name.split(' ');
+        return pp.length >= 2 && pp[0].toLowerCase() === first && pp[pp.length-1].toLowerCase() === last;
+      });
+      if (m && m.role) return m.role;
+    }
+    return '';
+  }
+
   const assessorData = assessorIds.map(id => {
     const recs = base.filter(r => r.assessorId === id);
     // Try PMR lookup first; fall back to register's assessorName field
@@ -1731,25 +1755,16 @@ function renderAssessorReport() {
     // If PMR lookup failed (legacy IDs), use data from the register record itself
     if (!nm && recs.length) {
       nm = recs[0].assessorName || id;
-      // Try to match the name back to PMR for role/rig
-      // 1) Exact or substring match
-      let pmrMatch = PMR_PERSONNEL.find(p => p.name === nm || nm.includes(p.name) || p.name.includes(nm));
-      // 2) First + last name match (handles abbreviated middle names like "M.M." vs "Madan Mohan")
-      if (!pmrMatch) {
-        const parts = nm.split(' ');
-        if (parts.length >= 2) {
-          const first = parts[0].toLowerCase(), last = parts[parts.length-1].toLowerCase();
-          pmrMatch = PMR_PERSONNEL.find(p => {
-            const pp = p.name.split(' ');
-            return pp[0].toLowerCase() === first && pp[pp.length-1].toLowerCase() === last;
-          });
-        }
-      }
+      const pmrMatch = PMR_PERSONNEL.find(p => p.name === nm || nm.includes(p.name) || p.name.includes(nm))
+        || (() => { const parts = nm.split(' '); if (parts.length >= 2) { const f = parts[0].toLowerCase(), l = parts[parts.length-1].toLowerCase(); return PMR_PERSONNEL.find(p => { const pp = p.name.split(' '); return pp.length >= 2 && pp[0].toLowerCase() === f && pp[pp.length-1].toLowerCase() === l; }); } return null; })();
       rl = pmrMatch ? pmrMatch.role : '';
       rg = pmrMatch ? pmrMatch.rig : recs[0].rig || '';
       const parts = nm.split(' ');
       sn = parts.length > 1 ? parts[0][0] + '. ' + parts[parts.length-1] : nm;
     }
+    // v4.1: Always re-resolve position from live PMR (CAMS Position is source of truth)
+    const liveRole = resolvePosition(nm);
+    if (liveRole) rl = liveRole;
     return { id, name: nm || id, short: sn || id, role: rl || '—', rig: rg || '—', recs };
   }).sort((a,b) => b.recs.length - a.recs.length);
 
