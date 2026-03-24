@@ -1707,12 +1707,26 @@ function renderAssessorReport() {
   const fleetCwCRate = base.filter(a=>a.outcome==='Competent with Coaching').length / totalAssess;
 
   // Get unique assessors who have actually conducted assessments (data-driven)
+  // Handles both PMR IDs (BHDC-P-###) and legacy IDs (a01, a16, etc.)
   const assessorIds = [...new Set(base.map(a=>a.assessorId).filter(Boolean))];
   const assessorData = assessorIds.map(id => {
     const recs = base.filter(r => r.assessorId === id);
-    const role = assessorRole(id) || recs[0]?.assessorRole || '—';
-    const rig = assessorRig(id) || recs[0]?.rig || '—';
-    return { id, name: assessorName(id) || id, short: assessorShort(id) || id, role, rig, recs };
+    // Try PMR lookup first; fall back to register's assessorName field
+    let nm = assessorName(id);
+    let rl = assessorRole(id);
+    let rg = assessorRig(id);
+    let sn = assessorShort(id);
+    // If PMR lookup failed (legacy IDs), use data from the register record itself
+    if (!nm && recs.length) {
+      nm = recs[0].assessorName || id;
+      // Try to match the name back to PMR for role/rig
+      const pmrMatch = PMR_PERSONNEL.find(p => p.name === nm || nm.includes(p.name) || p.name.includes(nm));
+      rl = pmrMatch ? pmrMatch.role : '';
+      rg = pmrMatch ? pmrMatch.rig : recs[0].rig || '';
+      const parts = nm.split(' ');
+      sn = parts.length > 1 ? parts[0][0] + '. ' + parts[parts.length-1] : nm;
+    }
+    return { id, name: nm || id, short: sn || id, role: rl || '—', rig: rg || '—', recs };
   }).sort((a,b) => b.recs.length - a.recs.length);
 
   // ── KPI row ──
@@ -1752,74 +1766,88 @@ function renderAssessorReport() {
   });
 
   // ── Score distribution by assessor chart (stacked bar) ──
+  // Only include assessors who have item-level score data
+  const assessorsWithScores = assessorData.filter(a => a.recs.some(r => r.scores && Object.keys(r.scores).length > 0));
+
   destroyChart('chart-score-dist');
-  charts['chart-score-dist'] = new Chart(document.getElementById('chart-score-dist'), {
-    type: 'bar',
-    data: {
-      labels: assessorData.map(a => a.short),
-      datasets: [
-        {
-          label:'Score 0 (Critical Gap)',
-          data: assessorData.map(a => {
-            const sc = a.recs.flatMap(x=>Object.values(x.scores||{}));
-            return sc.length ? Math.round(sc.filter(s=>s===0).length/sc.length*100) : 0;
-          }),
-          backgroundColor:'rgba(192,57,43,0.8)'
-        },
-        {
-          label:'Score 1 (Coaching)',
-          data: assessorData.map(a => {
-            const sc = a.recs.flatMap(x=>Object.values(x.scores||{}));
-            return sc.length ? Math.round(sc.filter(s=>s===1).length/sc.length*100) : 0;
-          }),
-          backgroundColor:'rgba(230,126,34,0.8)'
-        },
-        {
-          label:'Score 2 (Competent)',
-          data: assessorData.map(a => {
-            const sc = a.recs.flatMap(x=>Object.values(x.scores||{}));
-            return sc.length ? Math.round(sc.filter(s=>s===2).length/sc.length*100) : 0;
-          }),
-          backgroundColor:'rgba(39,174,96,0.8)'
-        }
-      ]
-    },
-    options:{
-      plugins:{
-        legend:{position:'top'},
-        title:{display:true,text:`Fleet mean: ${fleetMean.toFixed(2)} | DR rate: ${Math.round(fleetDRRate*100)}%`,font:{size:12}}
+  if (assessorsWithScores.length > 0) {
+    charts['chart-score-dist'] = new Chart(document.getElementById('chart-score-dist'), {
+      type: 'bar',
+      data: {
+        labels: assessorsWithScores.map(a => a.short),
+        datasets: [
+          {
+            label:'Score 0 (Critical Gap)',
+            data: assessorsWithScores.map(a => {
+              const sc = a.recs.flatMap(x=>Object.values(x.scores||{}));
+              return sc.length ? Math.round(sc.filter(s=>s===0).length/sc.length*100) : 0;
+            }),
+            backgroundColor:'rgba(192,57,43,0.8)'
+          },
+          {
+            label:'Score 1 (Coaching)',
+            data: assessorsWithScores.map(a => {
+              const sc = a.recs.flatMap(x=>Object.values(x.scores||{}));
+              return sc.length ? Math.round(sc.filter(s=>s===1).length/sc.length*100) : 0;
+            }),
+            backgroundColor:'rgba(230,126,34,0.8)'
+          },
+          {
+            label:'Score 2 (Competent)',
+            data: assessorsWithScores.map(a => {
+              const sc = a.recs.flatMap(x=>Object.values(x.scores||{}));
+              return sc.length ? Math.round(sc.filter(s=>s===2).length/sc.length*100) : 0;
+            }),
+            backgroundColor:'rgba(39,174,96,0.8)'
+          }
+        ]
       },
-      scales:{
-        x:{stacked:true,ticks:{font:{size:10},maxRotation:45}},
-        y:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}}}
-      },
-      animation: false, responsive:true, maintainAspectRatio:false
-    }
-  });
+      options:{
+        plugins:{
+          legend:{position:'top'},
+          title:{display:true,text: allScores.length ? `Fleet mean: ${fleetMean.toFixed(2)} | DR rate: ${Math.round(fleetDRRate*100)}%` : 'No item-level score data yet',font:{size:12}}
+        },
+        scales:{
+          x:{stacked:true,ticks:{font:{size:10},maxRotation:45}},
+          y:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}}}
+        },
+        animation: false, responsive:true, maintainAspectRatio:false
+      }
+    });
+  }
 
   // ── Per-assessor cards (data-driven) ──
   const cards = assessorData.map(a => {
     const recs = a.recs;
     const scores = recs.flatMap(r => Object.values(r.scores || {}));
-    if (!scores.length) return '';
+    const hasScores = scores.length > 0;
 
-    const meanScore = scores.reduce((x,y)=>x+y,0) / scores.length;
-    const pct2 = Math.round(scores.filter(s=>s===2).length/scores.length*100);
-    const pct1 = Math.round(scores.filter(s=>s===1).length/scores.length*100);
-    const pct0 = Math.round(scores.filter(s=>s===0).length/scores.length*100);
     const drRate = recs.filter(r=>r.outcome==='Development Required').length/recs.length;
     const vcRate = recs.filter(r=>r.outcome==='Verified Competent').length/recs.length;
     const cwcRate = recs.filter(r=>r.outcome==='Competent with Coaching').length/recs.length;
 
-    const calIndex = Math.abs(meanScore - fleetMean);
+    const rigTag = a.rig === 'All' || a.rig === '—' ? '<span class="tag">All Rigs</span>' : rigBadge(a.rig);
 
+    // Score-dependent metrics (only if item-level data exists)
+    let scoreRows = '';
     let flags = [];
-    if (pct2 > 85) flags.push('<span class="flag-warn">⚠ High proportion of 2s — verify rigour</span>');
-    if (pct0 < 1 && recs.length > 10 && drRate < 0.02) flags.push('<span class="flag-warn">⚠ Very few 0s — potential rubber-stamping</span>');
-    if (calIndex > 0.25) flags.push('<span class="flag-bad">⚠ Calibration deviation — review vs fleet</span>');
-    if (pct2 <= 85 && !(pct0 < 1 && recs.length > 10) && drRate > fleetDRRate * 0.5) flags.push('<span class="flag-good">✓ Calibrated</span>');
-
-    const rigTag = a.rig === 'All' ? '<span class="tag">All Rigs</span>' : rigBadge(a.rig);
+    if (hasScores) {
+      const meanScore = scores.reduce((x,y)=>x+y,0) / scores.length;
+      const pct2 = Math.round(scores.filter(s=>s===2).length/scores.length*100);
+      const pct1 = Math.round(scores.filter(s=>s===1).length/scores.length*100);
+      const pct0 = Math.round(scores.filter(s=>s===0).length/scores.length*100);
+      const calIndex = Math.abs(meanScore - fleetMean);
+      scoreRows = `
+        <div class="assessor-stat"><span>Mean score</span><span>${meanScore.toFixed(2)}</span><span class="small"> (fleet: ${fleetMean.toFixed(2)})</span></div>
+        <div class="assessor-stat"><span>Score dist. (0/1/2)</span><span>${pct0}% / ${pct1}% / <strong>${pct2}%</strong></span></div>
+        <div class="assessor-stat"><span>Calibration index</span><span class="${calIndex>0.25?'flag-bad':calIndex>0.15?'flag-warn':'flag-good'}">${calIndex.toFixed(2)}</span></div>`;
+      if (pct2 > 85) flags.push('<span class="flag-warn">⚠ High proportion of 2s — verify rigour</span>');
+      if (pct0 < 1 && recs.length > 10 && drRate < 0.02) flags.push('<span class="flag-warn">⚠ Very few 0s — potential rubber-stamping</span>');
+      if (calIndex > 0.25) flags.push('<span class="flag-bad">⚠ Calibration deviation — review vs fleet</span>');
+      if (pct2 <= 85 && !(pct0 < 1 && recs.length > 10) && drRate > fleetDRRate * 0.5) flags.push('<span class="flag-good">✓ Calibrated</span>');
+    } else {
+      scoreRows = '<div class="assessor-stat"><span>Score data</span><span class="small" style="color:#888">Historical — no item-level scores</span></div>';
+    }
 
     return `
       <div class="assessor-card">
@@ -1828,9 +1856,7 @@ function renderAssessorReport() {
         <div class="assessor-stat"><span>VC rate</span><span class="flag-good"><strong>${Math.round(vcRate*100)}%</strong></span><span class="small"> (fleet: ${Math.round(fleetVCRate*100)}%)</span></div>
         <div class="assessor-stat"><span>CwC rate</span><span class="flag-warn"><strong>${Math.round(cwcRate*100)}%</strong></span><span class="small"> (fleet: ${Math.round(fleetCwCRate*100)}%)</span></div>
         <div class="assessor-stat"><span>DR rate</span><span class="${drRate>fleetDRRate*1.5?'flag-warn':drRate<fleetDRRate*0.3&&recs.length>5?'flag-bad':''}"><strong>${Math.round(drRate*100)}%</strong></span><span class="small"> (fleet: ${Math.round(fleetDRRate*100)}%)</span></div>
-        <div class="assessor-stat"><span>Mean score</span><span>${meanScore.toFixed(2)}</span><span class="small"> (fleet: ${fleetMean.toFixed(2)})</span></div>
-        <div class="assessor-stat"><span>Score dist. (0/1/2)</span><span>${pct0}% / ${pct1}% / <strong>${pct2}%</strong></span></div>
-        <div class="assessor-stat"><span>Calibration index</span><span class="${calIndex>0.25?'flag-bad':calIndex>0.15?'flag-warn':'flag-good'}">${calIndex.toFixed(2)}</span></div>
+        ${scoreRows}
         ${flags.length ? `<div style="margin-top:10px;font-size:11px;line-height:1.8">${flags.join('<br>')}</div>` : ''}
       </div>`;
   });
